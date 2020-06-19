@@ -1,2 +1,2 @@
 const elem = document.getElementById('test');
-elem.innerText = 'Hi!';
+elem.innerText = 'Hi world!';
