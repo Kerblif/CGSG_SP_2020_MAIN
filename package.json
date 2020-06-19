@@ -7,7 +7,8 @@
     "build": "webpack --config webpack.config.js",
     "start": "webpack-dev-server",
     "b": "webpack --config webpack.config.js",
-    "s": "webpack-dev-server"
+    "s": "webpack-dev-server",
+    "autocommit": "git add . && git commit -m \"<comment here>\" && git push -u <your branch> master"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,7 @@
     "file-loader": "^6.0.0",
     "html-loader": "^1.1.0",
     "html-webpack-plugin": "^4.3.0",
+    "matter-js": "^0.14.2",
     "mini-css-extract-plugin": "^0.9.0",
     "raw-loader": "^4.0.1",
     "three": "^0.117.1",
