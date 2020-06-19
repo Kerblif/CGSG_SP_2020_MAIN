@@ -23,7 +23,7 @@ class Animate {
 
   createCamera () {
     this._camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    this._camera.position.set(2, 2, 2);
+    this._camera.position.set(15, 15, 15);
     this._camera.lookAt(0, 0, 0);
   }
 
