@@ -4,7 +4,7 @@ const path = require('path');
 
 module.exports = {
   mode: 'development',
-  entry: './src/main.js',
+  entry: './src/code/main.js',
   output: {
     filename: 'main-b.js',
     path: path.resolve(__dirname, 'dist')
@@ -44,7 +44,7 @@ module.exports = {
   plugins: [
     new MiniCssExtractPlugin(),
     new HtmlWebPackPlugin({
-      template: './src/index.html',
+      template: './src/code/index.html',
       filename: './index.html'
     })
   ]
