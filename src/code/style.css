@@ -1,0 +1,10 @@
+body, html{
+    background: hsl(35, 81%, 89%);
+    overflow: hidden
+}
+
+#cWebGL{
+    width: 100%;
+    height: 100%;
+    display: block;
+}
