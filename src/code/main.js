@@ -29,8 +29,7 @@ class Animate {
 
   _resizeCanvas () {
     const pixelRatio = window.devicePixelRatio;
-    const w = canvas.clientWidth | 0; const h = canvas.clientHeight | 0;
-    console.log(this._canvas.clientHeight); // always const ?????????
+    const w = this._canvas.clientWidth | 0; const h = this._canvas.clientHeight | 0;
 
     if (this._canvas.width === w && this._canvas.height === h) {
       return;
