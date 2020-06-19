@@ -25,7 +25,7 @@ class Animate {
   createCamera () {
     this._camera = new Camera(75, 0.1, 1000, true);
     this._camera.set({ x: 2, y: 2, z: 2 });
-    this._camera.targetSet({ x: 0, y: 0, z: 0 });
+    this._camera.targetSet({ x: 0, y: 2, z: 0 });
   }
 
   _resizeCanvas () {
@@ -42,6 +42,9 @@ class Animate {
 
   render () {
     this._resizeCanvas();
+
+    this._camera.update();
+
     this._drawScene();
     window.requestAnimationFrame(this.render);
   }

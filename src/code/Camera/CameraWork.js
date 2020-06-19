@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import MouseWork from './../IOWorking/IOWork';
+import { KeyboardWork, MouseWork } from './../IOWorking/IOWork';
 
 export default class Camera {
   constructor (fov, near, far, haveMouseWork = false) {
@@ -7,6 +7,10 @@ export default class Camera {
     this._camera.position.set(2, 2, 2);
     this._camera.lookAt(0, 0, 0);
     this._target = { x: 0, y: 0, z: 0 };
+    this._xAngle = 0;
+    this._yAngle = 0;
+    this._lastxAngle = 0;
+    this._lastYAngle = 0;
 
     this._hasMouseWork = haveMouseWork;
 
@@ -49,7 +53,15 @@ export default class Camera {
 
   update () {
     if (this._hasMouseWork) {
-      this._mouseWork.update();
+      this._yAngle += this._mouseWork.getYChange / 500;
+      this._xAngle = this._mouseWork.getTransX / 500;
+      if (this._xAngle !== this._lastXAngle || this._yAngle !== this._lastYAngle) {
+        this.targetSet({
+          x: this._camera.position.x - Math.sin(this._xAngle) * Math.cos(this._yAngle),
+          y: this._camera.position.y + Math.sin(this._yAngle),
+          z: this._camera.position.z - Math.cos(this._xAngle) * Math.cos(this._yAngle)
+        });
+      }
     }
   }
 }
