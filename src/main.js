@@ -1,17 +1,5 @@
 import * as THREE from 'three';
 
-function _resizeRendererToDisplaySize (renderer) {
-  const canvas = renderer.domElement;
-  const pixelRatio = window.devicePixelRatio;
-  const width = canvas.clientWidth * pixelRatio | 0;
-  const height = canvas.clientHeight * pixelRatio | 0;
-  const needResize = canvas.width !== width || canvas.height !== height;
-  if (needResize) {
-    renderer.setSize(width, height, false);
-  }
-  return needResize;
-}
-
 class Animate {
   constructor (canvas) {
     const context = canvas.getContext('webgl2', { alpha: false });
@@ -38,12 +26,24 @@ class Animate {
     this.camera.lookAt(0, 0, 0);
   }
 
+  _resizeCanvas (renderer) {
+    const pixelRatio = window.devicePixelRatio;
+    const w = this.canvas.clientWidth | 0;
+    const h = this.canvas.clientHeight | 0;
+
+    if (this.canvas.width === w || this.canvas.height === h) {
+      return;
+    }
+
+    this.renderer.setSize(w * pixelRatio, h * pixelRatio, false);
+
+    this.camera.aspect = this.canvas.clientWidth / this.canvas.clientHeight;
+    this.camera.updateProjectionMatrix();
+  }
+
   render () {
     window.requestAnimationFrame(this.render);
-    if (_resizeRendererToDisplaySize(this.renderer)) {
-      this.camera.aspect = this.canvas.clientWidth / this.canvas.clientHeight;
-      this.camera.updateProjectionMatrix();
-    }
+    this._resizeCanvas();
     this.drawScene();
   }
 
