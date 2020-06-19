@@ -19,17 +19,17 @@ class Animate {
 
   init () {
     this.school = new School(osSchool, this._scene);
+    this._scene.add(new THREE.DirectionalLight(0xFFFFFF, 1));
     // const geom = new THREE.BoxGeometry(1, 1, 1);
     // const mtl = new THREE.MeshBasicMaterial({ color: 0xFFffFF });
     // this._box = new THREE.Mesh(geom, mtl);
-    this._scene.add(new THREE.DirectionalLight(0xFFFFFF, 1));
     this.createCamera();
   }
 
   createCamera () {
-    this._camera = new Camera(75, 0.1, 1000, true);
-    this._camera.set({ x: 2, y: 2, z: 2 });
-    this._camera.targetSet({ x: 0, y: 2, z: 0 });
+    this._camera = new Camera(45, 0.1, 1000, true);
+    this._camera.set({ x: 10, y: 30, z: 10 });
+    this._camera.targetSet({ x: 0, y: 0, z: 30 });
   }
 
   _resizeCanvas () {
