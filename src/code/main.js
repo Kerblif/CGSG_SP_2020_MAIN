@@ -1,5 +1,6 @@
 import './style.css';
 import * as THREE from 'three';
+import Camera from './Camera/CameraWork.js';
 
 class Animate {
   constructor (canvas) {
@@ -22,9 +23,9 @@ class Animate {
   }
 
   createCamera () {
-    this._camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    this._camera.position.set(2, 2, 2);
-    this._camera.lookAt(0, 0, 0);
+    this._camera = new Camera(75, 0.1, 1000, true);
+    this._camera.set({ x: 2, y: 2, z: 2 });
+    this._camera.targetSet({ x: 0, y: 0, z: 0 });
   }
 
   _resizeCanvas () {
@@ -35,9 +36,8 @@ class Animate {
       return;
     }
 
-    this._camera.aspect = w / h;
     this._renderer.setSize(w * pixelRatio, h * pixelRatio, false);
-    this._camera.updateProjectionMatrix();
+    this._camera.aspect = w / h;
   }
 
   render () {
@@ -47,7 +47,7 @@ class Animate {
   }
 
   _drawScene () {
-    this._renderer.render(this._scene, this._camera);
+    this._renderer.render(this._scene, this._camera.camera);
   }
 }
 
