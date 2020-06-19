@@ -1,4 +1,31 @@
 import * as THREE from 'three';
+//import * as MINIMAP from 'minimap.js';
+
+
+class Minimap {
+  constructor (scene) {
+    this.scene = scene;
+  }
+
+  init () {
+    const geometry = new THREE.SphereGeometry(3, 20, 20);
+    const material = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
+    this.primitive = new THREE.Mesh(geometry, material);
+    this.scene.add(this.primitive);
+  }
+}
+
+function _resizeRendererToDisplaySize (renderer) {
+  const canvas = renderer.domElement;
+  const pixelRatio = window.devicePixelRatio;
+  const width = canvas.clientWidth * pixelRatio | 0;
+  const height = canvas.clientHeight * pixelRatio | 0;
+  const needResize = canvas.width !== width || canvas.height !== height;
+  if (needResize) {
+    renderer.setSize(width, height, false);
+  }
+  return needResize;  
+}
 
 class Animate {
   constructor (canvas) {
@@ -13,11 +40,14 @@ class Animate {
   }
 
   init () {
-    const geom = new THREE.BoxGeometry(1, 1, 1);
+    /*const geom = new THREE.BoxGeometry(1, 1, 1);
     const mtl = new THREE.MeshBasicMaterial({ color: 0xFFffFF });
     this.box = new THREE.Mesh(geom, mtl);
-    this.scene.add(this.box);
+    this.scene.add(this.box);*/
     this.createCamera();
+
+    this.minimap = new Minimap(this.scene);
+    this.minimap.init();
   }
 
   createCamera () {
@@ -26,24 +56,12 @@ class Animate {
     this.camera.lookAt(0, 0, 0);
   }
 
-  _resizeCanvas (renderer) {
-    const pixelRatio = window.devicePixelRatio;
-    const w = this.canvas.clientWidth | 0;
-    const h = this.canvas.clientHeight | 0;
-
-    if (this.canvas.width === w || this.canvas.height === h) {
-      return;
-    }
-
-    this.renderer.setSize(w * pixelRatio, h * pixelRatio, false);
-
-    this.camera.aspect = this.canvas.clientWidth / this.canvas.clientHeight;
-    this.camera.updateProjectionMatrix();
-  }
-
   render () {
     window.requestAnimationFrame(this.render);
-    this._resizeCanvas();
+    if (_resizeRendererToDisplaySize(this.renderer)) {
+      this.camera.aspect = this.canvas.clientWidth / this.canvas.clientHeight;
+      this.camera.updateProjectionMatrix();
+    }
     this.drawScene();
   }
 
