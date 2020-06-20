@@ -1,7 +1,8 @@
+import * as THREE from 'three';
 
-class Minimap {
-  constructor (scene) {
-    this.scene = scene;
+
+export default class Minimap {
+  constructor () {
   }
 
   init () {

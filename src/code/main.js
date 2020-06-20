@@ -1,6 +1,8 @@
 import './style.css';
 import * as THREE from 'three';
 import Camera from './Camera/CameraWork.js';
+import Minimap from './Minimap/minimap.js';
+
 
 import osSchool from '../bin/models/school/MainModel.glb';
 import School from './objworking/school';
@@ -21,6 +23,10 @@ class Animate {
     this.school = new School(osSchool, this._scene);
     this._scene.add(new THREE.DirectionalLight(0xFFFFFF, 1));
     this.createCamera();
+
+    this.minimap = new Minimap(this._renderer, 20, 20, 700, 700);
+    this.minimap.init(50, 50);
+
   }
 
   createCamera () {
@@ -51,7 +57,8 @@ class Animate {
   }
 
   _drawScene () {
-    this._renderer.render(this._scene, this._camera.camera);
+    //this._renderer.render(this._scene, this._camera.camera);
+    this.minimap.draw();
   }
 }
 
