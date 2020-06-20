@@ -1,10 +1,14 @@
 import './style.css';
 import * as THREE from 'three';
+import Camera from './Camera/CameraWork.js';
+
+import osSchool from '../bin/models/school/MainModel.glb';
+import School from './objworking/school';
 
 class Animate {
   constructor (canvas) {
-    //    const context = canvas.getContext('webgl2', { alpha: false });
-    this._renderer = new THREE.WebGLRenderer({ canvas: canvas });
+    const context = canvas.getContext('webgl2', { alpha: false });
+    this._renderer = new THREE.WebGLRenderer({ canvas: canvas, context: context });
     this._renderer.outputEncoding = THREE.sRGBEncoding;
 
     this._canvas = canvas;
@@ -14,41 +18,40 @@ class Animate {
   }
 
   init () {
-    const geom = new THREE.BoxGeometry(1, 1, 1);
-    const mtl = new THREE.MeshBasicMaterial({ color: 0xFFffFF });
-    this._box = new THREE.Mesh(geom, mtl);
-    this._scene.add(this._box);
+    this.school = new School(osSchool, this._scene);
+    this._scene.add(new THREE.DirectionalLight(0xFFFFFF, 1));
     this.createCamera();
   }
 
   createCamera () {
-    this._camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    this._camera.position.set(2, 2, 2);
-    this._camera.lookAt(0, 0, 0);
+    this._camera = new Camera(45, 0.1, 1000, true);
+    this._camera.set({ x: 100, y: 30, z: 10 });
+    this._camera.targetSet({ x: 0, y: 0, z: 30 });
   }
 
   _resizeCanvas () {
     const pixelRatio = window.devicePixelRatio;
-    const w = canvas.clientWidth | 0; const h = canvas.clientHeight | 0;
-    console.log(this._canvas.clientHeight); // always const ?????????
+    const w = this._canvas.clientWidth | 0; const h = this._canvas.clientHeight | 0;
 
     if (this._canvas.width === w && this._canvas.height === h) {
       return;
     }
 
-    this._camera.aspect = w / h;
     this._renderer.setSize(w * pixelRatio, h * pixelRatio, false);
-    this._camera.updateProjectionMatrix();
+    this._camera.aspect = w / h;
   }
 
   render () {
     this._resizeCanvas();
+
+    this._camera.update();
+
     this._drawScene();
     window.requestAnimationFrame(this.render);
   }
 
   _drawScene () {
-    this._renderer.render(this._scene, this._camera);
+    this._renderer.render(this._scene, this._camera.camera);
   }
 }
 
