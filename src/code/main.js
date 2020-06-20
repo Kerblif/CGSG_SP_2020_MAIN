@@ -24,7 +24,7 @@ class Animate {
     this._scene.add(new THREE.DirectionalLight(0xFFFFFF, 1));
     this.createCamera();
 
-    this.minimap = new Minimap(this._renderer, 20, 20, 700, 700);
+    this.minimap = new Minimap(this._canvas, this._renderer, 20, 20, 700, 700);
     this.minimap.init(50, 50);
 
   }
@@ -51,6 +51,7 @@ class Animate {
     this._resizeCanvas();
 
     this._camera.update();
+    this.minimap.response();
 
     this._drawScene();
     window.requestAnimationFrame(this.render);

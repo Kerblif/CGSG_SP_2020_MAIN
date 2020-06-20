@@ -1,22 +1,23 @@
 import * as THREE from 'three';
-import {OrbitControls} from '../../../node_modules/three/examples/jsm/controls/OrbitControls.js';
+import { OrbitControls } from '../../../node_modules/three/examples/jsm/controls/OrbitControls.js';
+import { MouseWork } from './../IOWorking/IOWork';
 
 /* Minimap clas */
 export default class Minimap {
-  constructor (renderer, 
-              windowWestSide, windowSouthSide, 
-              windowWidth, windowHeight) {
+  constructor ( canvas, renderer, 
+                windowWestSide, windowSouthSide, 
+                windowWidth, windowHeight ) {
 
     /* Render objects */
+    this._canvas = canvas;
+    //canvas.addEventListener('mousemove', (event) => console.log(event.offsetX));
     this._renderer = renderer;
         
     this._clearColor = 0x4B0082;
 
     this._scene = new THREE.Scene();
     this._camera = new THREE.PerspectiveCamera( 45, windowWidth / windowHeight, 0.1, 1000 );
-
-    this.controls = new OrbitControls(this._camera, this._renderer.domElement);
-
+    
     /* Window params */
     this._windowWestSide = windowWestSide;
     this._windowSouthSide = windowSouthSide; 
@@ -25,6 +26,12 @@ export default class Minimap {
 
     /* Main group */
     this._group = new THREE.Group();
+
+    /* Controls */
+    this._mouseWork = new MouseWork();
+    this.controls = new OrbitControls(this._camera, this._renderer.domElement);
+
+
   }
 
   /* Initialization method */
@@ -55,9 +62,10 @@ export default class Minimap {
     this._group.add( this._primitive );
     //this._group.add( this._axesHelper );
 
-
     this._group.position.set( 0, 0, 0 );
     this._scene.add( this._group );
+
+    
   }
 
   /* Drawing method */
@@ -91,15 +99,23 @@ export default class Minimap {
   
 
     /* Check animation */
-    if (this._isAnimation) {
+    if ( this._isAnimation ) {
       /* Check animation progress */
       
 
     } else {
       /* Mouse response */
+      //console.log(this._mouseWork.mouseX, this._mouseWork.mouseY);
+      /* Check mouse location */
+      if ( this._mouseWork.mouseX > this._windowWestSide && 
+           this._mouseWork.mouseX < this._windowWestSide + this._windowWidth ) {
+
+        this._clearColor = 0xFF0000;
+      } else {
+        this._clearColor = 0x00FF00;
+      }
 
 
-      /* Movement */
 
     }
   }
