@@ -2,8 +2,9 @@ import './style.css';
 import * as THREE from 'three';
 import Camera from './Camera/CameraWork.js';
 
-import osSchool from '../bin/models/school/MainModel.glb';
-import School from './objworking/school';
+// import osSchool from '../bin/models/school/MainModel.glb';
+import osSchool from '../bin/models/school/School30Floors.glb';
+import School from './ObjWorking/School.mjs';
 
 class Animate {
   constructor (canvas) {
@@ -19,7 +20,9 @@ class Animate {
 
   init () {
     this.school = new School(osSchool, this._scene);
-    this._scene.add(new THREE.DirectionalLight(0xFFFFFF, 1));
+    const lamp = new THREE.DirectionalLight(0xFFFFFF, 1);
+    lamp.position.set(1, 1, 1);
+    this._scene.add(lamp);
     this.createCamera();
   }
 
