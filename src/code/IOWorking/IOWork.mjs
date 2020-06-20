@@ -1,15 +1,15 @@
-export default class KeyboardWork {
+export class KeyboardWork {
   constructor (inputfunc) {
     this.arr = new Set();
     this.inputfunc = inputfunc;
 
-    const add = (e) => { this.arr.add(e.key); };
+    const add = (e) => { this.arr.add(e.code); };
 
     let func = add.bind(this);
 
     document.addEventListener('keydown', func);
 
-    const remove = (e) => { this.arr.delete(e.key); };
+    const remove = (e) => { this.arr.delete(e.code); };
 
     func = remove.bind(this);
 

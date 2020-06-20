@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { KeyboardWork, MouseWork } from './../IOWorking/IOWork';
 
 export default class Camera {
-  constructor (fov, near, far, haveMouseWork = false) {
+  constructor (fov, near, far, hasControl = false) {
     this._camera = new THREE.PerspectiveCamera(fov, 1, near, far);
     this._camera.position.set(0, 0, 0);
     this._camera.lookAt(0, 0, -1);
@@ -12,10 +12,11 @@ export default class Camera {
     this._lastxAngle = 0;
     this._lastYAngle = 0;
 
-    this._hasMouseWork = haveMouseWork;
+    this._hasControl = hasControl;
 
-    if (this._hasMouseWork) {
+    if (this._hasControl) {
       this._mouseWork = new MouseWork();
+      this._keyboardWork = new KeyboardWork(this._keyboardMove.bind(this));
     }
   }
 
@@ -31,7 +32,7 @@ export default class Camera {
     if (value.y !== undefined) { this._camera.position.y = value.y; }
     if (value.z !== undefined) { this._camera.position.z = value.z; }
 
-    this.targetSetWithoutAngle({
+    this._targetSetWithoutAngle({
       x: this._camera.position.x - Math.sin(this._xAngle) * Math.cos(this._yAngle),
       y: this._camera.position.y + Math.sin(this._yAngle),
       z: this._camera.position.z - Math.cos(this._xAngle) * Math.cos(this._yAngle)
@@ -39,12 +40,9 @@ export default class Camera {
   }
 
   targetSet (value) {
-    this._camera.lookAt(value.x !== undefined ? value.x : this._target.x, value.y !== undefined ? value.y : this._target.y, value.z !== undefined ? value.z : this._target.z);
-    if (value.x !== undefined) { this._target.x = value.x; }
-    if (value.y !== undefined) { this._target.y = value.y; }
-    if (value.z !== undefined) { this._target.z = value.z; }
+    this._targetSetWithoutAngle(value);
 
-    if (this._hasMouseWork) {
+    if (this._hasControl) {
       const camDirX = this._target.x - this._camera.position.x;
       const camDirY = this._target.y - this._camera.position.y;
       const camDirZ = this._target.z - this._camera.position.z;
@@ -57,7 +55,7 @@ export default class Camera {
     }
   }
 
-  targetSetWithoutAngle (value) {
+  _targetSetWithoutAngle (value) {
     this._camera.lookAt(value.x !== undefined ? value.x : this._target.x, value.y !== undefined ? value.y : this._target.y, value.z !== undefined ? value.z : this._target.z);
     if (value.x !== undefined) { this._target.x = value.x; }
     if (value.y !== undefined) { this._target.y = value.y; }
@@ -76,12 +74,52 @@ export default class Camera {
     return this._camera;
   }
 
+  _keyboardMove (key, keys) {
+    switch (key) {
+      case 'KeyW':
+        this.set({
+          x: this._camera.position.x - Math.sin(this._xAngle) / 2,
+          z: this._camera.position.z - Math.cos(this._xAngle) / 2
+        });
+        break;
+      case 'KeyS':
+        this.set({
+          x: this._camera.position.x + Math.sin(this._xAngle) / 2,
+          z: this._camera.position.z + Math.cos(this._xAngle) / 2
+        });
+        break;
+      case 'KeyD':
+        this.set({
+          x: this._camera.position.x + Math.cos(this._xAngle) / 2,
+          z: this._camera.position.z - Math.sin(this._xAngle) / 2
+        });
+        break;
+      case 'KeyA':
+        this.set({
+          x: this._camera.position.x - Math.cos(this._xAngle) / 2,
+          z: this._camera.position.z + Math.sin(this._xAngle) / 2
+        });
+        break;
+      case 'Space':
+        this.set({
+          y: this._camera.position.y + 0.5
+        });
+        break;
+      case 'ShiftLeft':
+        this.set({
+          y: this._camera.position.y - 0.5
+        });
+    }
+  }
+
   update () {
-    if (this._hasMouseWork) {
+    if (this._hasControl) {
+      this._keyboardWork.update();
+
       this._yAngle += this._mouseWork.getYChange / 500;
       this._xAngle += this._mouseWork.getXChange / 500;
       if (this._xAngle !== this._lastXAngle || this._yAngle !== this._lastYAngle) {
-        this.targetSetWithoutAngle({
+        this._targetSetWithoutAngle({
           x: this._camera.position.x - Math.sin(this._xAngle) * Math.cos(this._yAngle),
           y: this._camera.position.y + Math.sin(this._yAngle),
           z: this._camera.position.z - Math.cos(this._xAngle) * Math.cos(this._yAngle)
