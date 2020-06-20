@@ -8,3 +8,30 @@ body, html{
     height: 100%;
     display: block;
 }
+
+#info {
+    background-color: rgb(218, 233, 241);
+    width: 0px;
+    position: absolute;
+    transition: left .47s ease-out;
+}
+
+.text {
+    color: navy;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    margin: 0px;
+}
+
+#info_text {
+    padding-left: 30px;
+}
+
+#close {
+    position: absolute;
+    top: 5px;
+}
+
+#close:hover {
+    cursor: w-resize;
+}

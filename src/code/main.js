@@ -1,10 +1,12 @@
 import './style.css';
 import * as THREE from 'three';
 import Camera from './Camera/CameraWork.js';
+import Sidebar from './Sidebar/Sidebar.js';
 
 // import osSchool from '../bin/models/school/MainModel.glb';
 import osSchool from '../bin/models/school/School30Floors.glb';
 import School from './ObjWorking/School.mjs';
+import CloseImg from '../bin/textures/Close.png';
 
 class Animate {
   constructor (canvas) {
@@ -24,6 +26,18 @@ class Animate {
     lamp.position.set(1, 1, 1);
     this._scene.add(lamp);
     this.createCamera();
+    this._resizeCanvas();
+
+    this.Sidebar = new Sidebar(512, 'info', CloseImg);
+
+    this.Sidebar.setText('Text sample');
+    this.Sidebar.setHeader('Welcome to school #30!!!');
+
+    const T = this;
+    window.addEventListener('resize', function () {
+      T._resizeCanvas();
+      T.Sidebar.resize();
+    }, false);
   }
 
   createCamera () {
@@ -34,7 +48,8 @@ class Animate {
 
   _resizeCanvas () {
     const pixelRatio = window.devicePixelRatio;
-    const w = this._canvas.clientWidth | 0; const h = this._canvas.clientHeight | 0;
+    const w = this._canvas.clientWidth | 0;
+    const h = this._canvas.clientHeight | 0;
 
     if (this._canvas.width === w && this._canvas.height === h) {
       return;
@@ -45,8 +60,6 @@ class Animate {
   }
 
   render () {
-    this._resizeCanvas();
-
     this._camera.update();
 
     this._drawScene();
