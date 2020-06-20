@@ -33,10 +33,9 @@ class Animate {
     this.Sidebar.setText('Text sample');
     this.Sidebar.setHeader('Welcome to school #30!!!');
 
-    const T = this;
-    window.addEventListener('resize', function () {
-      T._resizeCanvas();
-      T.Sidebar.resize();
+    window.addEventListener('resize', () => {
+      this._resizeCanvas();
+      this.Sidebar.resize();
     }, false);
   }
 
