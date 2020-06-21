@@ -29,9 +29,14 @@ class Animate {
     this._scene.add(lamp);
     this.createCamera();
 
-    this.minimap = new Minimap(this._canvas, this._renderer, 0, 0, 0.5, 0.5);
-    this.minimap.init(50, 50);
-
+    this._minimap = new Minimap(this._canvas, this._renderer, true,
+                                0.01, 0.01, 0.7, 0.7);
+    this._minimap.init(50, 50, "./src/bin/minimap/",
+                        [
+                          "floor_01.jpg",
+                          "floor_02.jpg"
+                        ]);
+ 
     this._resizeCanvas();
 
     this.Sidebar = new Sidebar(512, 'info', CloseImg);
@@ -62,14 +67,16 @@ class Animate {
 
     this._renderer.setSize(w * pixelRatio, h * pixelRatio, false);
     this._camera.aspect = w / h;
+
+    this._minimap.resize();
   }
 
   render () {
     this._camera.update();
-    this.minimap.response();
+    this._minimap.response();
 
     this._drawScene();
-    this.minimap.draw();
+    this._minimap.draw();
     window.requestAnimationFrame(this.render);
   }
 

@@ -28,6 +28,7 @@ export class MouseWork {
     this.transX = 0.0; this.transY = 0.0; this.transZ = 10.0;
     this.mouseX = 0.0; this.mouseY = 0.0;
     this.mouseXChange = 0.0; this.mouseYChange = 0.0;
+    this.isPressed = false;
 
     let func = this.onWheel.bind(this);
 
@@ -40,12 +41,17 @@ export class MouseWork {
     func = this.onMouseMove.bind(this);
 
     document.onmousedown = (event) => {
+      this.pressX = event.pageX;
+      this.pressY = event.pageY;
+      this.isPressed = true;
+
       this.startPosX = event.pageX;
       this.startPosY = event.pageY;
       document.addEventListener('mousemove', func);
     };
 
     window.onmouseup = () => {
+      this.isPressed = false;
       document.removeEventListener('mousemove', func);
     };
   }
@@ -57,7 +63,7 @@ export class MouseWork {
   }
 
   onMouseMove (event) {
-    this.mouseXChange = this.startPosX - event.pageX;
+    this.mouseXChange = this.startPosX;
     this.transX += this.mouseXChange;
     this.startPosX = event.pageX;
 
@@ -93,5 +99,17 @@ export class MouseWork {
 
   get getTransZ () {
     return this.transZ;
+  }
+
+  get getIsPressed () {
+    return this.isPressed;
+  }
+
+  get getPressX () {
+    return this.pressX;
+  }
+
+  get getPressY () {
+    return this.pressY;
   }
 }
