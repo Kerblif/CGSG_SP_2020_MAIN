@@ -5,7 +5,7 @@ import Sidebar from './Sidebar/Sidebar.js';
 
 // import osSchool from '../bin/models/school/MainModel.glb';
 import osSchool from '../bin/models/school/School30Floors.glb';
-import School from './ObjWorking/School.mjs';
+import School from './ObjWorking/School.js';
 import CloseImg from '../bin/textures/Close.png';
 
 class Animate {
