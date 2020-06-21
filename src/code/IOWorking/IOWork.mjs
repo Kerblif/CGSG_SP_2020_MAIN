@@ -63,7 +63,7 @@ export class MouseWork {
   }
 
   onMouseMove (event) {
-    this.mouseXChange = this.startPosX;
+    this.mouseXChange = this.startPosX - event.pageX;
     this.transX += this.mouseXChange;
     this.startPosX = event.pageX;
 

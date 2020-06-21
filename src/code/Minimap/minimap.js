@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from '../../../node_modules/three/examples/jsm/controls/OrbitControls.js';
+import { DragControls } from '../../../node_modules/three/examples/jsm/controls/DragControls.js';
 import { MouseWork } from './../IOWorking/IOWork';
-import { Template } from 'webpack';
-
 
 
 /* Minimap clas */
@@ -45,6 +44,8 @@ export default class Minimap {
     this._mouseWork = new MouseWork();
     this._isMouseHandling = true;
     
+
+    
     /*document.onmousedown = (event) => {
       if (this._isMouseCoordsInWindow(event.x, event.y)) {
         this._isMouseHandling = true;
@@ -54,7 +55,7 @@ export default class Minimap {
       this._isMouseHandling = false;
     }*/
 
-    this.controls = new OrbitControls(this._camera, this._renderer.domElement);
+    //this.controls = new OrbitControls(this._camera, this._renderer.domElement);
   }
 
   /* Initialization method */
@@ -76,9 +77,15 @@ export default class Minimap {
     /* Create primitive */
     const geometry = new THREE.PlaneGeometry(mapWidth, mapHeight, 5, 5);
     const material = new THREE.MeshBasicMaterial({color: 0xA9A9A9, 
-                                                  side: THREE.DoubleSide,
-                                                  map: this._texFloors[this._curFloor]});
+                                                  side: THREE.DoubleSide/*,
+    map: this._texFloors[this._curFloor]*/});
     this._primitive = new THREE.Mesh(geometry, material);
+
+    /* Create sphere */
+    const sgeometry = new THREE.SphereGeometry(1, 20, 20);
+    const smaterial = new THREE.MeshBasicMaterial({color: 0x000000});
+    this._sphere = new THREE.Mesh(sgeometry, smaterial);
+    this._scene.add(this._sphere);
     
     //this._primitive.add(new THREE.AxesHelper( 5 ));
     
@@ -86,16 +93,20 @@ export default class Minimap {
     this._axesHelper = new THREE.AxesHelper(5);
        
     /* Set camera params */
-    this._camera.position.set(0, 0, 0);
-    this._camera.lookAt(0, 0, -10);
+    this._camera.position.set(0, 100, 100);
+    this._camera.lookAt(0, 0, 0);
     
     
     /* Handling group */
     this._group.add(this._primitive);
-    this._group.add(this._axesHelper);
+    //this._group.add(this._axesHelper);
 
-    this._group.position.set(0, 0, -100);
+    this._group.position.set(0, 0, 0);
     this._scene.add(this._group);
+
+    /*this._dragControls = new DragControls( [this._group], this._camera, this._renderer.domElement );
+    this._dragControls.transformGroup = true;*/
+    
 
     
   }
@@ -124,6 +135,7 @@ export default class Minimap {
     /* Set new camera projection */
     this._camera.aspect = this._curWindowWidth / this._curWindowHeight;
     this._camera.updateProjectionMatrix();
+
   }
 
   /* Drawing method */
@@ -169,9 +181,49 @@ export default class Minimap {
       if ( this._mouseWork.getIsPressed &&
            this._isMouseCoordsInWindow(this._mouseWork.getPressX, this._mouseWork.getPressY) ) {
         
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
 
-        this._group.applyMatrix4( (new THREE.Matrix4()).makeTranslation(-this._mouseWork.getXChange, this._mouseWork.getYChange, 0) );
+        const coords = this._getMouseNormWindowCoords(this._mouseWork.mouseX, this._mouseWork.mouseY );
+        mouse.set(coords.x, coords.y);
+          
+        raycaster.setFromCamera( mouse, this._camera );
 
+        // calculate objects intersecting the picking ray
+        /*var intersects = raycaster.intersectObject( this._ );
+      
+        for ( var i = 0; i < intersects.length; i++ ) {
+      
+          intersects[ i ].object.material.color.set( 0xff0000 );
+      
+        }*/
+        var intersect = raycaster.intersectObject( this._primitive );
+      
+        if (intersect.length > 0) {
+          console.log("Yeah");
+          intersect[ 0 ].object.material.color.set( 0x0000ff );
+          this._sphere.position.copy(intersect[ 0 ].point);
+        } else {
+          this._primitive.material.color.set( 0xA9A9A9 );
+        }
+        /*
+        const pixelRatio = window.devicePixelRatio;    
+        let x = -this._mouseWork.getXChange;
+        let y = this._mouseWork.getYChange;
+
+        let tmp = new THREE.Vector3(x, y, 0);
+        let a = tmp.length();
+
+        if (a == 0) {
+          return;
+        }
+
+        tmp.applyMatrix4((new THREE.Matrix4()).getInverse(this._camera.projectionMatrix));
+        let b = tmp.length();
+
+        //console.log(a, b, b / a);
+        this._group.applyMatrix4( (new THREE.Matrix4()).makeTranslation(x * 0.01, y * 0.1, 0) );
+          */
         this._clearColor = 0x00FF00;
       } else {
         this._clearColor = 0xFF0000;
@@ -182,6 +234,13 @@ export default class Minimap {
     }
   }
 
+
+  _getMouseNormWindowCoords (x, y) {
+    const pixelRatio = window.devicePixelRatio;
+    const resX = (x * pixelRatio - this._curWindowOffsetX) / this._curWindowWidth * 2 - 1;
+    const resY = ((this._canvas.height - y * pixelRatio) - this._curWindowOffsetY) / this._curWindowHeight * 2 - 1;
+    return {x: resX, y: resY};
+  }
 
   _isMouseCoordsInWindow(x, y) {
     const pixelRatio = window.devicePixelRatio;
