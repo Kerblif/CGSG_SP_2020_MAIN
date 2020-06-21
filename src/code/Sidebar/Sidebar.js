@@ -34,20 +34,22 @@ export default class Sidebar {
     this.max = width;
     this.Sidebar.style.left = '-' + this.max + 'px';
     this.Sidebar.style.width = this.max + 'px';
+    this.Sidebar.style.height = window.innerWidth + 'px';
     this.Close.style.marginLeft = this.max;
 
-    const T = this;
-    this.Close.onclick = function (ev) {
-      if (T.WTarget === 0) {
-        T.WTarget = T.max;
-        T.Sidebar.style.left = '0px';
+    this.Close.onclick = (ev) => {
+      if (this.WTarget === 0) {
+        this.WTarget = this.max;
+        this.Sidebar.style.left = '0px';
       } else {
-        T.WTarget = 0;
-        T.Sidebar.style.left = '-' + T.max + 'px';
+        this.WTarget = 0;
+        this.Sidebar.style.left = '-' + this.max + 'px';
       }
     };
 
-    this.resize();
+    window.addEventListener('resize', () => {
+      this.Sidebar.style.height = window.innerWidth + 'px';
+    }, false);
   }
 
   setText (text) {
@@ -65,12 +67,6 @@ export default class Sidebar {
   getCanvas () {
     if (this.init) {
       return this.Canvas;
-    }
-  }
-
-  resize () {
-    if (this.init) {
-      this.Sidebar.style.height = window.innerWidth + 'px';
     }
   }
 }

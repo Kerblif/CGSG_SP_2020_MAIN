@@ -35,3 +35,7 @@ body, html{
 #close:hover {
     cursor: w-resize;
 }
+
+img, canvas {
+    pointer-events: none;
+}

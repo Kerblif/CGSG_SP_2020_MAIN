@@ -1,12 +1,10 @@
 import './style.css';
 import * as THREE from 'three';
 import Camera from './Camera/CameraWork.js';
-import Sidebar from './Sidebar/Sidebar.js';
 
 // import osSchool from '../bin/models/school/MainModel.glb';
 import osSchool from '../bin/models/school/School30Floors.glb';
 import School from './ObjWorking/School.mjs';
-import CloseImg from '../bin/textures/Close.png';
 
 class Animate {
   constructor (canvas) {
@@ -21,21 +19,15 @@ class Animate {
   }
 
   init () {
-    this.school = new School(osSchool, this._scene);
+    this.createCamera();
+    this._resizeCanvas();
+    this.school = new School(osSchool, this._scene, THREE, this._camera.camera);
     const lamp = new THREE.DirectionalLight(0xFFFFFF, 1);
     lamp.position.set(1, 1, 1);
     this._scene.add(lamp);
-    this.createCamera();
-    this._resizeCanvas();
-
-    this.Sidebar = new Sidebar(512, 'info', CloseImg);
-
-    this.Sidebar.setText('Text sample');
-    this.Sidebar.setHeader('Welcome to school #30!!!');
 
     window.addEventListener('resize', () => {
       this._resizeCanvas();
-      this.Sidebar.resize();
     }, false);
   }
 
