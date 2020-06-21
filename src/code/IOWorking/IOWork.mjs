@@ -67,8 +67,8 @@ export class MouseWork {
   }
 
   onMouseChangePos (event) {
-    this.mouseX = event.clientX;
-    this.mouseY = event.clientY;
+    this.mouseX = event.offsetX;
+    this.mouseY = event.offsetY;
   }
 
   get getTransX () {

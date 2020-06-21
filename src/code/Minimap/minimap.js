@@ -2,27 +2,46 @@ import * as THREE from 'three';
 import { OrbitControls } from '../../../node_modules/three/examples/jsm/controls/OrbitControls.js';
 import { MouseWork } from './../IOWorking/IOWork';
 
+
+
+function windowToCanvas(canvas, x, y) {
+  var bbox = canvas.getBoundingClientRect();
+  return { x: x - bbox.left * (canvas.width / bbox.width),
+      y: y - bbox.top * (canvas.height / bbox.height)
+  };
+}
+
+
 /* Minimap clas */
 export default class Minimap {
   constructor ( canvas, renderer, 
-                windowWestSide, windowSouthSide, 
-                windowWidth, windowHeight ) {
+                windowWestSideRatio, windowSouthSideRatio, 
+                windowWidthRatio, windowHeightRatio ) {
 
     /* Render objects */
     this._canvas = canvas;
-    //canvas.addEventListener('mousemove', (event) => console.log(event.offsetX));
     this._renderer = renderer;
+    //this._canvas.addEventListener('mousemove', (event) => console.log(event.pageX));
+    /*this._canvas.addEventListener('mouseup', function (e) {
+      console.log(e.pageX - e.target.offsetLeft)});*/
+
+    /*canvas.onmousemove = (e) => {
+      let loc = windowToCanvas(canvas, e.clientX, e.clientY);
+      console.log(loc.x / this._canvas.width);
+    };*/
+      
         
     this._clearColor = 0x4B0082;
 
     this._scene = new THREE.Scene();
-    this._camera = new THREE.PerspectiveCamera( 45, windowWidth / windowHeight, 0.1, 1000 );
+    this._camera = new THREE.PerspectiveCamera( 45, windowWidthRatio / windowHeightRatio, 
+                                                0.1, 1000 );
     
     /* Window params */
-    this._windowWestSide = windowWestSide;
-    this._windowSouthSide = windowSouthSide; 
-    this._windowWidth = windowWidth; 
-    this._windowHeight = windowHeight;
+    this._windowWestSideRatio = windowWestSideRatio;
+    this._windowSouthSideRatio = windowSouthSideRatio; 
+    this._windowWidthRatio = windowWidthRatio; 
+    this._windowHeightRatio = windowHeightRatio;
 
     /* Main group */
     this._group = new THREE.Group();
@@ -30,8 +49,6 @@ export default class Minimap {
     /* Controls */
     this._mouseWork = new MouseWork();
     this.controls = new OrbitControls(this._camera, this._renderer.domElement);
-
-
   }
 
   /* Initialization method */
@@ -80,10 +97,14 @@ export default class Minimap {
     this._renderer.setClearColor( this._clearColor );
     this._renderer.clearDepth();
     this._renderer.setScissorTest( true );
-    this._renderer.setScissor( this._windowWestSide, this._windowSouthSide,
-                               this._windowWidth, this._windowHeight );
-    this._renderer.setViewport( this._windowWestSide, this._windowSouthSide, 
-                                this._windowWidth, this._windowHeight );
+    this._renderer.setScissor( (this._canvas.width * this._windowWestSideRatio),
+                               (this._canvas.height * this._windowSouthSideRatio),
+                               (this._canvas.width * this._windowWidthRatio),
+                               (this._canvas.height * this._windowHeightRatio) );
+    this._renderer.setViewport( (this._canvas.width * this._windowWestSideRatio),
+                                (this._canvas.height * this._windowSouthSideRatio),
+                                (this._canvas.width * this._windowWidthRatio),
+                                (this._canvas.height * this._windowHeightRatio) );
 
     /* Draw */
     this._renderer.render( this._scene, this._camera );
@@ -105,10 +126,10 @@ export default class Minimap {
 
     } else {
       /* Mouse response */
-      //console.log(this._mouseWork.mouseX, this._mouseWork.mouseY);
+      //console.log(this._mouseWork.mouseX / document.documentElement.clientWidth);
       /* Check mouse location */
-      if ( this._mouseWork.mouseX > this._windowWestSide && 
-           this._mouseWork.mouseX < this._windowWestSide + this._windowWidth ) {
+      if ( this._mouseWork.mouseX / document.documentElement.clientWidth > this._windowWestSideRatio && 
+        this._mouseWork.mouseX / document.documentElement.clientWidth < this._windowWestSideRatio + this._windowWidthRatio) {
 
         this._clearColor = 0xFF0000;
       } else {
