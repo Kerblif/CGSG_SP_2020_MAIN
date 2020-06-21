@@ -3,9 +3,12 @@ import * as THREE from 'three';
 import Camera from './Camera/CameraWork.js';
 import Minimap from './Minimap/minimap.js';
 
+import Sidebar from './Sidebar/Sidebar.js';
 
-import osSchool from '../bin/models/school/MainModel.glb';
-import School from './objworking/school';
+// import osSchool from '../bin/models/school/MainModel.glb';
+import osSchool from '../bin/models/school/School30Floors.glb';
+import School from './ObjWorking/School.mjs';
+import CloseImg from '../bin/textures/Close.png';
 
 class Animate {
   constructor (canvas) {
@@ -21,12 +24,25 @@ class Animate {
 
   init () {
     this.school = new School(osSchool, this._scene);
-    this._scene.add(new THREE.DirectionalLight(0xFFFFFF, 1));
+    const lamp = new THREE.DirectionalLight(0xFFFFFF, 1);
+    lamp.position.set(1, 1, 1);
+    this._scene.add(lamp);
     this.createCamera();
 
     this.minimap = new Minimap(this._canvas, this._renderer, 0, 0, 0.5, 0.5);
     this.minimap.init(50, 50);
 
+    this._resizeCanvas();
+
+    this.Sidebar = new Sidebar(512, 'info', CloseImg);
+
+    this.Sidebar.setText('Text sample');
+    this.Sidebar.setHeader('Welcome to school #30!!!');
+
+    window.addEventListener('resize', () => {
+      this._resizeCanvas();
+      this.Sidebar.resize();
+    }, false);
   }
 
   createCamera () {
@@ -37,7 +53,8 @@ class Animate {
 
   _resizeCanvas () {
     const pixelRatio = window.devicePixelRatio;
-    const w = this._canvas.clientWidth | 0; const h = this._canvas.clientHeight | 0;
+    const w = this._canvas.clientWidth | 0;
+    const h = this._canvas.clientHeight | 0;
 
     if (this._canvas.width === w && this._canvas.height === h) {
       return;
@@ -48,18 +65,16 @@ class Animate {
   }
 
   render () {
-    this._resizeCanvas();
-
     this._camera.update();
     this.minimap.response();
 
     this._drawScene();
+    this.minimap.draw();
     window.requestAnimationFrame(this.render);
   }
 
   _drawScene () {
-    //this._renderer.render(this._scene, this._camera.camera);
-    this.minimap.draw();
+    this._renderer.render(this._scene, this._camera.camera);
   }
 }
 
