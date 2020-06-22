@@ -64,7 +64,7 @@ class Animate {
   }
 
   createCamera () {
-    this._camera = new Camera(45, 0.1, 1000, true);
+    this._camera = new Camera(45, 0.1, 1000, true, this._canvas);
     this._camera.set({ x: 100, y: 30, z: 10 });
     this._camera.targetSet({ x: 0, y: 0, z: 30 });
   }
