@@ -1,6 +1,4 @@
 import * as THREE from 'three';
-import { OrbitControls } from '../../../node_modules/three/examples/jsm/controls/OrbitControls.js';
-import { DragControls } from '../../../node_modules/three/examples/jsm/controls/DragControls.js';
 import { MouseWork } from './../IOWorking/IOWork';
 
 
@@ -200,7 +198,6 @@ export default class Minimap {
         var intersect = raycaster.intersectObject( this._primitive );
       
         if (intersect.length > 0) {
-          console.log("Yeah");
           intersect[ 0 ].object.material.color.set( 0x0000ff );
           this._sphere.position.copy(intersect[ 0 ].point);
         } else {
