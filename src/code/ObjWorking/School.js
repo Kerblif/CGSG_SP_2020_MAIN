@@ -27,10 +27,10 @@ export default class School {
 
     this._camera = camera;
     this._scene = scene;
-    this._selectMtl = new THREE.MeshPhongMaterial({ color: 0xEE1111 });
+    this._selectMtl = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
     this._deselectMtl = new THREE.MeshPhongMaterial({ color: 0xBBBBBB });
     let tmp = (obj) => {
-      this._school = obj.o;
+      this._school = obj.obj;
       this._school.traverse((obj) => {
         obj.material = this._deselectMtl;
       });
@@ -39,8 +39,8 @@ export default class School {
     ModelManager.get({ src: osSchool }).then(tmp);
     this._floors = {};
     tmp = (val) => {
-      this._floors[val.a.name] = val.o;
-      this._floors[val.a.name].traverse((obj) => {
+      this._floors[val.args.name] = val.obj;
+      this._floors[val.args.name].traverse((obj) => {
         obj.material = this._deselectMtl;
       });
     };
@@ -50,6 +50,7 @@ export default class School {
     ModelManager.get({ src: osFloor_3, args: { name: 3 } }).then(tmp);
     ModelManager.get({ src: osFloor_4, args: { name: 4 } }).then(tmp);
     this._cur = new THREE.Object3D();
+    this._selectObj = {};
   }
 
   /**
@@ -76,9 +77,7 @@ export default class School {
     const obj = this._cur.getObjectById(name);
     if (obj === undefined) { throw new NExist('Not exist: room.'); }
     const delTmp = this._deselectMtl;
-    this._cur.traverse((o) => {
-      o.material = delTmp;
-    });
+    this._cur.traverse((o) => { o.material = delTmp; });
     obj.material = this._selectMtl;
   }
 
@@ -114,15 +113,17 @@ export default class School {
 
     const select = this._raycaster.intersectObjects(this._cur.children);
     if (select.length > 0) {
-      const delTmp = new THREE.MeshPhongMaterial({ color: 0xBBBBBB });
-      this._cur.traverse((o) => { o.material = delTmp; });
-      select[0].object.material = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
+      this._selectObj.material = this._deselectMtl;
+      select[0].object.material = this._selectMtl;
+      this._selectObj = select[0].object;
+    } else {
+      this._selectObj.material = this._deselectMtl;
     }
   }
 
   _keyDebugSwitcher (e) {
     switch (e.code) {
-      case 'Digit0': this.setStreetView(1); break;
+      case 'Digit0': this.setStreetView(); break;
       case 'Digit1': this.setFloor(1); break;
       case 'Digit2': this.setFloor(2); break;
       case 'Digit3': this.setFloor(3); break;
