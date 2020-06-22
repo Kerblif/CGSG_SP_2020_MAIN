@@ -25,13 +25,13 @@ export default class School {
     this._selectMtl = new THREE.MeshPhongMaterial({ color: 0xEE1111 });
     this._deselectMtl = new THREE.MeshPhongMaterial({ color: 0xBBBBBB });
     let tmp = (obj) => {
-      this._school = obj;
+      this._school = obj.o;
       this._school.traverse((obj) => {
         obj.material = this._deselectMtl;
       });
     };
     tmp = tmp.bind(this);
-    ModelManager.get(osSchool).then(tmp);
+    ModelManager.get({ src: osSchool }).then(tmp);
     this._floors = {};
     tmp = (val) => {
       this._floors[val.a.name] = val.o;
@@ -44,24 +44,41 @@ export default class School {
     ModelManager.get({ src: osFloor_2, args: { name: 2 } }).then(tmp);
     ModelManager.get({ src: osFloor_3, args: { name: 3 } }).then(tmp);
     ModelManager.get({ src: osFloor_4, args: { name: 4 } }).then(tmp);
-    this._cur = this.setStreetView();
+    this._cur = new THREE.Object3D();
   }
 
   /**
    * Set the floor.
-   * @throws NExist  error.
-   * @param  {Number} num - number of floor for set.
+   * @throws NExist error.
+   * @param {Number} num - number of floor for set.
    * @returns (THREE.Object3D) - the model;
    */
   setFloor (num) {
-    this._scene.remove(this._cur);
     const model = this._floors[num];
     if (model === undefined) {
-      throw new NExist('Not exist floor.');
+      throw new NExist('Not exist: floor.');
     }
+    this._scene.remove(this._cur);
     model.material = this._selectMtl;
     this._scene.add(model);
     return model;
+  }
+
+  /**
+   * Set the room.
+   * @throws NExist error.
+   * @param {string} name - name of room.
+   */
+  setRoom (name) {
+    const obj = this._cur.getObjectById(name);
+    if (obj === undefined) {
+      throw new NExist('Not exist: room.');
+    }
+    const delTmp = this._deselectMtl;
+    this._cur.traverse((o) => {
+      o.material = delTmp;
+    });
+    obj.material = this._selectMtl;
   }
 
   /**
