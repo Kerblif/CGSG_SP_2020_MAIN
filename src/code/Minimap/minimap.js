@@ -1,13 +1,11 @@
 import * as THREE from 'three';
-import { MouseWork } from './../IOWorking/IOWork';
+import { MouseWork, KeyboardWork } from './../IOWorking/IOWork';
 import { Vector3 } from 'three';
 
 import {OrbitControls} from '../../../node_modules/three/examples/jsm/controls/OrbitControls.js';
 
 import vertShaderStrMinimap from './minimap_vert.glsl';
 import fragShaderStrMinimap from './minimap_frag.glsl';
-
-
 
 /* Minimap clas */
 export default class Minimap {
@@ -51,11 +49,20 @@ export default class Minimap {
 
     /* Controls */
     this._mouseWork = new MouseWork();
+    this._keyboardWork = new KeyboardWork(this._responseKeyboard.bind(this));
+    this._isKeysLock = true;
+    this._isMoveable = true;
     this._isMouseHandling = false;
     this._isFirstMouseResponse = false;
     this._lastMousePoint = new Vector3();
 
     //this._orbitControls = new OrbitControls(this._camera, this._renderer.domElement);
+
+    /* Editor */
+    this._editorSchoolMarking = {};
+    this._editorCurFloor = -1;
+    this._editorCurRoom = -1;
+
     
   }
 
@@ -80,7 +87,10 @@ export default class Minimap {
     let material;
 
     /* Create plane */
-    geometry = new THREE.PlaneGeometry(mapWidth, mapHeight, 5, 5);
+    this._planeWidth = mapWidth;
+    this._planeHeight = mapHeight;
+
+    geometry = new THREE.PlaneGeometry(mapWidth, mapHeight, 1, 1);
     material = new THREE.ShaderMaterial( {
       //side: THREE.DoubleSide,
       uniforms: {
@@ -107,10 +117,11 @@ export default class Minimap {
     this._group.add(this._surface);
 
     /* Create sphere */
-    geometry = new THREE.SphereGeometry(1, 20, 20);
-    material = new THREE.MeshBasicMaterial({color: 0x000000});
-    this._sphere = new THREE.Mesh(geometry, material);
-    this._scene.add(this._sphere);
+    //geometry = new THREE.SphereGeometry(0.2, 20, 20);
+    geometry = new THREE.TorusGeometry(0.4, 0.06, 20, 20);
+    material = new THREE.MeshBasicMaterial({color: 0xFF0000});
+    this._pointer = new THREE.Mesh(geometry, material);
+    this._scene.add(this._pointer);
     
     /* Create axes */
     this._axesHelper = new THREE.AxesHelper(5);
@@ -235,7 +246,9 @@ export default class Minimap {
 
       }
 
-      this._sphere.position.copy(this._lastMousePoint);
+      this._pointer.position.copy(this._lastMousePoint);
+      this._keyboardWork.update();
+
     }
   }
 
@@ -272,14 +285,73 @@ export default class Minimap {
 
   /* Make movement method */
   _movement (startPoint, endPoint) {
+    if (this._isMoveable) {
     this._group.position.add(this._tmpOperationV3.subVectors(endPoint, startPoint));
+    }
 
   }
 
   /* Handle mouse click  method */
-  _handleClick() {
+  _responseClick () {
 
 
+  }
+
+  /* Handle keyboard */
+  _responseKeyboard (key) {
+    /* Unlockable keys */
+    switch (key) {
+      case 'KeyL':
+        this._isKeysLock = false;
+        break;
+      case 'KeyZ':
+        this._isMoveable = true;
+        break;
+      case 'KeyX':
+        this._isMoveable = false;
+        break;
+        
+    }
+
+    if (this._isKeysLock) {
+      return;
+    }
+
+    /* Lockable keys */
+    switch (key) {
+      case 'KeyF':
+        this._isKeysLock = true;
+        this._editorCurFloor += 1;
+        this._editorSchoolMarking[`floor_${this._editorCurFloor}`] = {};
+        console.log(`Added floor #${this._editorCurFloor}`);
+        break;
+      case 'KeyR':
+        if (this._editorSchoolMarking[`floor_${this._editorCurFloor}`] === undefined) { break };
+        this._isKeysLock = true;
+        this._editorCurRoom += 1;
+        this._editorSchoolMarking[`floor_${this._editorCurFloor}`][`room_${this._editorCurRoom}`] = [];
+        console.log(`Added room #${this._editorCurRoom}`);
+        break;
+      case 'KeyP':
+        if (this._editorSchoolMarking[`floor_${this._editorCurFloor}`] === undefined ||
+            this._editorSchoolMarking[`floor_${this._editorCurFloor}`][`room_${this._editorCurRoom}`] === undefined) {
+          break
+        };
+        this._isKeysLock = true;
+        this._plane.worldToLocal(this._tmpMemoryV3.copy(this._lastMousePoint));
+
+        let coord = {};
+        coord.x = this._tmpMemoryV3.x / this._planeWidth * 2;
+        coord.y = this._tmpMemoryV3.y / this._planeHeight * 2;
+
+        this._editorSchoolMarking[`floor_${this._editorCurFloor}`][`room_${this._editorCurRoom}`].push(coord);
+        console.log(`Added coord ${JSON.stringify(coord)}`);
+        break;
+      case 'KeyC':
+        this._isKeysLock = true;
+        console.log(JSON.stringify(this._editorSchoolMarking));
+        break;
+    } 
   }
 
 }
@@ -297,3 +369,5 @@ class MinimapAnimation {
   }
 
 }
+
+

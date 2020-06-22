@@ -18,5 +18,5 @@ in vec2 vUv;
 
 void main() {
   gl_FragColor = texture2D(uTexFloors[0], vUv);
-  gl_FragColor = vec4((planePosition.x + 25.0) / 50.0, (planePosition.y + 25.0) / 50.0 * 0.0, 0.0, 1.0);
+  //gl_FragColor = vec4((planePosition.x + 25.0) / 50.0, (planePosition.y + 25.0) / 50.0 * 0.0, 0.0, 1.0);
 }

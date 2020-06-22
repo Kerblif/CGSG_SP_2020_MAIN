@@ -9,6 +9,8 @@ import Sidebar from './Sidebar/Sidebar.js';
 import osSchool from '../bin/models/school/School30Floors.glb';
 import School from './ObjWorking/School.js';
 import CloseImg from '../bin/textures/Close.png';
+//fs.writeFileSync("txt.txt", "my text",  "ascii")
+
 
 class Animate {
   constructor (canvas) {
@@ -30,8 +32,8 @@ class Animate {
     this.createCamera();
 
     this._minimap = new Minimap(this._canvas, this._renderer, true,
-                                0.01, 0.01, 0.7, 0.7);
-    this._minimap.init(50, 50, "./src/bin/minimap/",
+                                0.1, 0.1, 0.8, 0.8);
+    this._minimap.init(100, 100, "./src/bin/minimap/",
                         [
                           "floor_01.jpg",
                           "floor_02.jpg"
