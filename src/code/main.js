@@ -7,6 +7,7 @@ import Sidebar from './Sidebar/Sidebar.js';
 import osSchool from '../bin/models/school/School30Floors.glb';
 import School from './ObjWorking/School.js';
 import CloseImg from '../bin/textures/Close.png';
+import { PhisicsWork } from './Rooms/Physics/PhysicsWidget.mjs';
 
 class Animate {
   constructor (canvas) {
@@ -18,6 +19,7 @@ class Animate {
     this._scene = new THREE.Scene();
     this.init = this.init.bind(this);
     this.render = this.render.bind(this);
+    this.ghhhj = new PhisicsWork(document.getElementById('phys'), '0%', '0px', 1000, 1000, true, true);
   }
 
   init () {
