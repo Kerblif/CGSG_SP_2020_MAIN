@@ -61,6 +61,9 @@ export default class School {
    */
   setStreetView () {
     this._scene.remove(this._cur);
+    if (this._school === undefined) {
+      throw new NExist('Model onload.');
+    }
     this._scene.add(this._school);
     return this._school;
   }
