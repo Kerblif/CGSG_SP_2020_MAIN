@@ -32,13 +32,13 @@ class Animate {
     this.createCamera();
 
     this._minimap = new Minimap(this._canvas, this._renderer, true,
-                                0.01, 0.01, 0.2, 0.2);
-    this._minimap.init(50, 50, "./src/bin/minimap/",
-                        [
-                          "floor_01.jpg",
-                          "floor_02.jpg"
-                        ]);
- 
+      0.01, 0.01, 0.2, 0.2);
+    this._minimap.init(50, 50, './src/bin/minimap/',
+      [
+        'floor_01.jpg',
+        'floor_02.jpg'
+      ]);
+
     this._resizeCanvas();
 
     this.Sidebar = new Sidebar(512, 'info', CloseImg);
@@ -53,7 +53,7 @@ class Animate {
   }
 
   createCamera () {
-    this._camera = new Camera(45, 0.1, 1000, true);
+    this._camera = new Camera(45, 0.1, 1000, true, this._canvas);
     this._camera.set({ x: 100, y: 30, z: 10 });
     this._camera.targetSet({ x: 0, y: 0, z: 30 });
   }

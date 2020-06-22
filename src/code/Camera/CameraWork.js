@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { KeyboardWork, MouseWork } from './../IOWorking/IOWork';
 
 export default class Camera {
-  constructor (fov, near, far, hasControl = false) {
+  constructor (fov, near, far, hasControl = false, elemet = document) {
     this._camera = new THREE.PerspectiveCamera(fov, 1, near, far);
     this._camera.position.set(0, 0, 0);
     this._camera.lookAt(0, 0, -1);
@@ -15,8 +15,8 @@ export default class Camera {
     this._hasControl = hasControl;
 
     if (this._hasControl) {
-      this._mouseWork = new MouseWork();
-      this._keyboardWork = new KeyboardWork(this._keyboardMove.bind(this));
+      this._mouseWork = new MouseWork(elemet);
+      this._keyboardWork = new KeyboardWork(this._keyboardMove.bind(this), elemet);
     }
   }
 

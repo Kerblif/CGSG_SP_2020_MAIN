@@ -1,9 +1,9 @@
 export class KeyboardWork {
-  constructor (inputfunc) {
+  constructor (inputfunc, elemet = document) {
     this._arr = new Set();
     this._inputfunc = inputfunc;
 
-    document.addEventListener('keydown', (e) => { this._arr.add(e.code); });
+    elemet.addEventListener('keydown', (e) => { this._arr.add(e.code); });
 
     document.addEventListener('keyup', (e) => { this._arr.delete(e.code); });
   }
@@ -16,13 +16,13 @@ export class KeyboardWork {
 }
 
 export class MouseWork {
-  constructor () {
+  constructor (elemet = document) {
     this._transZ = 10.0;
     this._mouseX = 0.0; this._mouseY = 0.0;
     this._mouseXChange = 0.0; this._mouseYChange = 0.0;
     this._isPressed = false;
 
-    document.addEventListener('wheel', (event) => {
+    elemet.addEventListener('wheel', (event) => {
       if (this._transZ > -event.deltaY * 3 / 10000) {
         this._transZ += event.deltaY * 3 / 10000;
       }
@@ -47,7 +47,7 @@ export class MouseWork {
       this._mouseY = event.offsetY;
     });
 
-    document.addEventListener('mousedown', (event) => {
+    elemet.addEventListener('mousedown', (event) => {
       this._pressX = event.pageX;
       this._pressY = event.pageY;
       this._isPressed = true;
