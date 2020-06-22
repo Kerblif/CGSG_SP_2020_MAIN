@@ -1,5 +1,5 @@
 {
-  "name": "sumprac_main_2020",
+  "name": "CGSG_SP_2020_MAIN",
   "version": "0.0.0",
   "description": "",
   "main": "main.js",
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EKhuzin/SUMPRAC_MAIN_2020.git"
+    "url": "git+https://github.com/EKhuzin/CGSG_SP_2020_MAIN.git"
   },
   "author": "EH5, DV1, DA2, AS1",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/EKhuzin/SUMPRAC_MAIN_2020/issues"
+    "url": "https://github.com/EKhuzin/CGSG_SP_2020_MAIN/issues"
   },
-  "homepage": "https://github.com/EKhuzin/SUMPRAC_MAIN_2020#readme",
+  "homepage": "https://github.com/EKhuzin/CGSG_SP_2020_MAIN#readme",
   "dependencies": {
     "@babel/core": "^7.10.2",
     "@babel/plugin-proposal-class-properties": "^7.10.1",
