@@ -114,10 +114,11 @@ export default class Camera {
 
   update () {
     if (this._hasControl) {
-      this._keyboardWork.update();
+      if (this._mouseWork.getIsPressed) {
+        this._yAngle += this._mouseWork.getYChange / 500;
+        this._xAngle += this._mouseWork.getXChange / 500;
+      }
 
-      this._yAngle += this._mouseWork.getYChange / 500;
-      this._xAngle += this._mouseWork.getXChange / 500;
       if (this._xAngle !== this._lastXAngle || this._yAngle !== this._lastYAngle) {
         this._targetSetWithoutAngle({
           x: this._camera.position.x - Math.sin(this._xAngle) * Math.cos(this._yAngle),
@@ -128,6 +129,9 @@ export default class Camera {
         this._lastYAngle = this._yAngle;
         this._lastXAngle = this._xAngle;
       }
+
+      this._keyboardWork.update();
+      this._mouseWork.update();
     }
   }
 }
