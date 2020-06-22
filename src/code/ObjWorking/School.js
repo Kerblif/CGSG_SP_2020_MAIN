@@ -6,9 +6,16 @@ import osFloor_3 from '../../bin/models/school/3_Floor.glb';
 import osFloor_4 from '../../bin/models/school/4_Floor.glb';
 import osSchool from '../../bin/models/school/MainModel.glb';
 
-function NExist (message) {
-  this.name = 'NExist';
-  this.message = (message || '');
+/**
+ * Error of not exist (undefined) properties.
+ * @constructor
+ * @param  {string} message - error message.
+ */
+class NExist {
+  constructor (message) {
+    this.name = 'NExist';
+    this.message = (message || '');
+  }
 }
 
 /* School event handler */
@@ -42,6 +49,7 @@ export default class School {
 
   /**
    * Set the floor.
+   * @throws NExist  error.
    * @param  {Number} num - number of floor for set.
    * @returns (THREE.Object3D) - the model;
    */
@@ -53,10 +61,12 @@ export default class School {
     }
     model.material = this._selectMtl;
     this._scene.add(model);
+    return model;
   }
 
   /**
    * Set the whole model.
+   * @throws NExist  error.
    * @returns (THREE.Object3D) - the model;
    */
   setStreetView () {
