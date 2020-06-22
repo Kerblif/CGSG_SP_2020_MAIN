@@ -28,8 +28,8 @@ export class PhisicsWork {
 
     canvas.style.width = w;
     canvas.style.height = h;
-    if (w.slice(-1) !== '%' && w.slice(-2) !== 'px') { canvas.style.width += 'px'; }
-    if (h.slice(-1) !== '%' && h.slice(-2) !== 'px') { canvas.style.height += 'px'; }
+    if (w.slice(-2) !== 'px') { canvas.style.width += 'px'; }
+    if (h.slice(-2) !== 'px') { canvas.style.height += 'px'; }
 
     const render = Matter.Render.create({
       canvas: canvas,

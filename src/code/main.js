@@ -21,7 +21,7 @@ class Animate {
     this._scene = new THREE.Scene();
     this.init = this.init.bind(this);
     this.render = this.render.bind(this);
-    this.ghhhj = new PhisicsWork(document.getElementById('phys'), '0%', '0px', 1000, 1000, true, true);
+    // this.ghhhj = new PhisicsWork(document.getElementById('phys'), '10px', '10px', 900, 900, true, true);
   }
 
   init () {
@@ -54,7 +54,7 @@ class Animate {
 
   createCamera () {
     this._camera = new Camera(45, 0.1, 1000, true, this._canvas);
-    this._camera.set({ x: 100, y: 30, z: 10 });
+    this._camera.cameraSet({ x: 100, y: 30, z: 10 });
     this._camera.targetSet({ x: 0, y: 0, z: 30 });
   }
 

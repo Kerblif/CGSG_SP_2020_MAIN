@@ -4,20 +4,103 @@ import { KeyboardWork, MouseWork } from './../IOWorking/IOWork';
 export default class Camera {
   constructor (fov, near, far, hasControl = false, elemet = document) {
     this._camera = new THREE.PerspectiveCamera(fov, 1, near, far);
-    this._camera.position.set(0, 0, 0);
-    this._camera.lookAt(0, 0, -1);
-    this._target = { x: 0, y: 0, z: -1 };
     this._xAngle = 0;
     this._yAngle = 0;
     this._lastxAngle = 0;
     this._lastYAngle = 0;
+    this._orbitControl = false;
+    this._lenght = 1;
+    this._centerPoint = { x: 0, y: 0, z: 0 };
+    this._radiusPoint = { x: 0, y: 0, z: -1 };
+    this._updatecamera();
 
     this._hasControl = hasControl;
 
     if (this._hasControl) {
       this._mouseWork = new MouseWork(elemet);
-      this._keyboardWork = new KeyboardWork(this._keyboardMove.bind(this), elemet);
+      this._keyboardWork = new KeyboardWork(this._keyboardMove.bind(this));
     }
+  }
+
+  cameraSet (value) {
+    if (this._orbitControl) {
+      this._radiusPointSet(value);
+    } else {
+      this._centerPointSet(value);
+    }
+  }
+
+  targetSet (value) {
+    if (!this._orbitControl) {
+      this._radiusPointSet(value);
+    } else {
+      this._centerPointSet(value);
+    }
+  }
+
+  _centerPointSet (value) {
+    if (value.x !== undefined) {
+      this._radiusPoint.x += value.x - this._centerPoint.x;
+      this._centerPoint.x = value.x;
+    }
+
+    if (value.y !== undefined) {
+      this._radiusPoint.y += value.y - this._centerPoint.y;
+      this._centerPoint.y = value.y;
+    }
+
+    if (value.z !== undefined) {
+      this._radiusPoint.z += value.z - this._centerPoint.z;
+      this._centerPoint.z = value.z;
+    }
+
+    this._updatecamera();
+  }
+
+  _radiusPointSet (value, needToUpdateAngle = true) {
+    if (value.x !== undefined) { this._radiusPoint.x = value.x; }
+    if (value.y !== undefined) { this._radiusPoint.y = value.y; }
+    if (value.z !== undefined) { this._radiusPoint.z = value.z; }
+
+    if (this._hasControl && needToUpdateAngle) {
+      const DirX = this._radiusPoint.x - this._centerPoint.x;
+      const DirY = this._radiusPoint.y - this._centerPoint.y;
+      const DirZ = this._radiusPoint.z - this._centerPoint.z;
+
+      this._lenght = Math.sqrt(DirZ ** 2 + DirX ** 2 + DirY ** 2);
+
+      this._xAngle = 0;
+      if (DirZ !== 0 || DirX !== 0) {
+        this._xAngle = Math.acos(DirZ / Math.sqrt(DirZ ** 2 + DirX ** 2));
+        if (DirX !== 0) { this._xAngle *= Math.sign(DirX); }
+      }
+      this._yAngle = Math.asin(DirY / this._lenght);
+      console.log(this._lenght);
+    }
+
+    this._updatecamera();
+  }
+
+  _updatecamera () {
+    if (this._orbitControl) {
+      this._camera.position.set(this._radiusPoint.x, this._radiusPoint.y, this._radiusPoint.z);
+      this._camera.lookAt(this._centerPoint.x, this._centerPoint.y, this._centerPoint.z);
+    } else {
+      this._camera.position.set(this._centerPoint.x, this._centerPoint.y, this._centerPoint.z);
+      this._camera.lookAt(this._radiusPoint.x, this._radiusPoint.y, this._radiusPoint.z);
+    }
+  }
+
+  set orbitControl (value) {
+    if (this._orbitControl === value) { return; }
+
+    this._orbitControl = value;
+
+    this._radiusPointSet({
+      x: this._centerPoint.x * 2 - this._radiusPoint.x,
+      y: this._centerPoint.y * 2 - this._radiusPoint.y,
+      z: this._centerPoint.z * 2 - this._radiusPoint.z
+    });
   }
 
   /**
@@ -25,41 +108,6 @@ export default class Camera {
      */
   set fov (value) {
     this._camera.fov = value;
-  }
-
-  set (value) {
-    if (value.x !== undefined) { this._camera.position.x = value.x; }
-    if (value.y !== undefined) { this._camera.position.y = value.y; }
-    if (value.z !== undefined) { this._camera.position.z = value.z; }
-
-    this._targetSetWithoutAngle({
-      x: this._camera.position.x - Math.sin(this._xAngle) * Math.cos(this._yAngle),
-      y: this._camera.position.y + Math.sin(this._yAngle),
-      z: this._camera.position.z - Math.cos(this._xAngle) * Math.cos(this._yAngle)
-    });
-  }
-
-  targetSet (value) {
-    this._targetSetWithoutAngle(value);
-
-    if (this._hasControl) {
-      const camDirX = this._target.x - this._camera.position.x;
-      const camDirY = this._target.y - this._camera.position.y;
-      const camDirZ = this._target.z - this._camera.position.z;
-
-      this._xAngle = 0;
-      if (camDirZ !== 0 || camDirX !== 0) {
-        this._xAngle = -Math.acos(camDirZ / Math.sqrt(camDirZ ** 2 + camDirX ** 2)) * Math.sign(camDirX);
-      }
-      this._yAngle = Math.asin(camDirY / Math.sqrt(camDirZ ** 2 + camDirX ** 2 + camDirY ** 2));
-    }
-  }
-
-  _targetSetWithoutAngle (value) {
-    this._camera.lookAt(value.x !== undefined ? value.x : this._target.x, value.y !== undefined ? value.y : this._target.y, value.z !== undefined ? value.z : this._target.z);
-    if (value.x !== undefined) { this._target.x = value.x; }
-    if (value.y !== undefined) { this._target.y = value.y; }
-    if (value.z !== undefined) { this._target.z = value.z; }
   }
 
   /**
@@ -74,57 +122,67 @@ export default class Camera {
     return this._camera;
   }
 
-  _keyboardMove (key, keys) {
+  _keyboardMove (key) {
+    const mul = this._orbitControl ? -1 : 1;
+
     switch (key) {
       case 'KeyW':
-        this.set({
-          x: this._camera.position.x - Math.sin(this._xAngle) / 2,
-          z: this._camera.position.z - Math.cos(this._xAngle) / 2
+        this._centerPointSet({
+          x: this._centerPoint.x + Math.sin(this._xAngle) / 2 * mul,
+          z: this._centerPoint.z + Math.cos(this._xAngle) / 2 * mul
         });
         break;
       case 'KeyS':
-        this.set({
-          x: this._camera.position.x + Math.sin(this._xAngle) / 2,
-          z: this._camera.position.z + Math.cos(this._xAngle) / 2
+        this._centerPointSet({
+          x: this._centerPoint.x - Math.sin(this._xAngle) / 2 * mul,
+          z: this._centerPoint.z - Math.cos(this._xAngle) / 2 * mul
         });
         break;
       case 'KeyD':
-        this.set({
-          x: this._camera.position.x + Math.cos(this._xAngle) / 2,
-          z: this._camera.position.z - Math.sin(this._xAngle) / 2
+        this._centerPointSet({
+          x: this._centerPoint.x - Math.cos(this._xAngle) / 2 * mul,
+          z: this._centerPoint.z + Math.sin(this._xAngle) / 2 * mul
         });
         break;
       case 'KeyA':
-        this.set({
-          x: this._camera.position.x - Math.cos(this._xAngle) / 2,
-          z: this._camera.position.z + Math.sin(this._xAngle) / 2
+        this._centerPointSet({
+          x: this._centerPoint.x + Math.cos(this._xAngle) / 2 * mul,
+          z: this._centerPoint.z - Math.sin(this._xAngle) / 2 * mul
         });
         break;
       case 'Space':
-        this.set({
-          y: this._camera.position.y + 0.5
+        this._centerPointSet({
+          y: this._centerPoint.y + 0.5
         });
         break;
       case 'ShiftLeft':
-        this.set({
-          y: this._camera.position.y - 0.5
+        this._centerPointSet({
+          y: this._centerPoint.y - 0.5
         });
+        break;
+      case 'KeyK':
+        this.orbitControl = true;
+        break;
+      case 'KeyL':
+        this.orbitControl = false;
     }
   }
 
   update () {
     if (this._hasControl) {
       if (this._mouseWork.getIsPressed) {
-        this._yAngle += this._mouseWork.getYChange / 500;
+        const mul = this._orbitControl ? -1 : 1;
+
+        this._yAngle += this._mouseWork.getYChange / 500 * mul;
         this._xAngle += this._mouseWork.getXChange / 500;
       }
 
       if (this._xAngle !== this._lastXAngle || this._yAngle !== this._lastYAngle) {
-        this._targetSetWithoutAngle({
-          x: this._camera.position.x - Math.sin(this._xAngle) * Math.cos(this._yAngle),
-          y: this._camera.position.y + Math.sin(this._yAngle),
-          z: this._camera.position.z - Math.cos(this._xAngle) * Math.cos(this._yAngle)
-        });
+        this._radiusPointSet({
+          x: this._centerPoint.x + Math.sin(this._xAngle) * Math.cos(this._yAngle) * this._lenght,
+          y: this._centerPoint.y + Math.sin(this._yAngle) * this._lenght,
+          z: this._centerPoint.z + Math.cos(this._xAngle) * Math.cos(this._yAngle) * this._lenght
+        }, false);
 
         this._lastYAngle = this._yAngle;
         this._lastXAngle = this._xAngle;
