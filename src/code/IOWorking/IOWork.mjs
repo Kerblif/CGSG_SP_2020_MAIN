@@ -43,8 +43,8 @@ export class MouseWork {
       this._mouseYChange = this._startPosY - event.pageY;
       this._startPosY = event.pageY;
 
-      this._mouseX = event.offsetX;
-      this._mouseY = event.offsetY;
+      this._mouseX = event.pageX;
+      this._mouseY = event.pageY;
     });
 
     document.addEventListener('mousedown', (event) => {
@@ -82,6 +82,14 @@ export class MouseWork {
 
   get getPressY () {
     return this._pressY;
+  }
+
+  get getMouseX () {
+    return this._mouseX;
+  }
+
+  get getMouseY () {
+    return this._mouseY;
   }
 
   update () {
