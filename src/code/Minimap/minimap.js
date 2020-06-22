@@ -1,5 +1,12 @@
 import * as THREE from 'three';
 import { MouseWork } from './../IOWorking/IOWork';
+import { Vector3 } from 'three';
+
+import {OrbitControls} from '../../../node_modules/three/examples/jsm/controls/OrbitControls.js';
+
+import vertShaderStrMinimap from './minimap_vert.glsl';
+import fragShaderStrMinimap from './minimap_frag.glsl';
+
 
 
 /* Minimap clas */
@@ -8,6 +15,10 @@ export default class Minimap {
                windowOffsetXRatio, windowOffsetYRatio,
                windowWidthRatio, windowHeightRatio) {
 
+    /* Tmp objects */
+    this._tmpOperationV3 = new THREE.Vector3();
+    this._tmpMemoryV3 = new THREE.Vector3();
+    this._tmpM4 = new THREE.Matrix4();
     
     /* Render objects */
     this._canvas = canvas;
@@ -40,20 +51,12 @@ export default class Minimap {
 
     /* Controls */
     this._mouseWork = new MouseWork();
-    this._isMouseHandling = true;
-    
+    this._isMouseHandling = false;
+    this._isFirstMouseResponse = false;
+    this._lastMousePoint = new Vector3();
 
+    //this._orbitControls = new OrbitControls(this._camera, this._renderer.domElement);
     
-    /*document.onmousedown = (event) => {
-      if (this._isMouseCoordsInWindow(event.x, event.y)) {
-        this._isMouseHandling = true;
-      } 
-    }
-    document.onmouseup = (event) => {
-      this._isMouseHandling = false;
-    }*/
-
-    //this.controls = new OrbitControls(this._camera, this._renderer.domElement);
   }
 
   /* Initialization method */
@@ -65,48 +68,62 @@ export default class Minimap {
       this._texFloors.push( (new THREE.TextureLoader().setPath(pathTex).load(nameTexFloors[i])) );
     }
 
-    /* Location params */
+    /* Floor params */
     this._curFloor = 0;
 
     /* Animation params */
     this._isAnimation = false;
     this._currentAnimation = undefined;
 
-    /* Create primitive */
-    const geometry = new THREE.PlaneGeometry(mapWidth, mapHeight, 5, 5);
-    const material = new THREE.MeshBasicMaterial({color: 0xA9A9A9, 
-                                                  side: THREE.DoubleSide/*,
-    map: this._texFloors[this._curFloor]*/});
-    this._primitive = new THREE.Mesh(geometry, material);
+    /* Create primitives */
+    let geometry;
+    let material;
+
+    /* Create plane */
+    geometry = new THREE.PlaneGeometry(mapWidth, mapHeight, 5, 5);
+    material = new THREE.ShaderMaterial( {
+      //side: THREE.DoubleSide,
+      uniforms: {
+        uTexFloors: {value: this._texFloors},
+      },
+      vertexShader: vertShaderStrMinimap,
+      fragmentShader: fragShaderStrMinimap
+    } );
+
+
+    /*
+    material = new THREE.MeshBasicMaterial({color: 0xA9A9A9, 
+                                            side: THREE.DoubleSide,
+                                            map: this._texFloors[this._curFloor]});
+    */
+    this._plane = new THREE.Mesh(geometry, material);
+    this._group.add(this._plane);
+        
+    /* Create surface */
+    geometry = new THREE.PlaneGeometry(1000, 1000, 1, 1);
+    material = new THREE.MeshBasicMaterial();
+    this._surface = new THREE.Mesh(geometry, material);
+    this._surface.visible = false;
+    this._group.add(this._surface);
 
     /* Create sphere */
-    const sgeometry = new THREE.SphereGeometry(1, 20, 20);
-    const smaterial = new THREE.MeshBasicMaterial({color: 0x000000});
-    this._sphere = new THREE.Mesh(sgeometry, smaterial);
+    geometry = new THREE.SphereGeometry(1, 20, 20);
+    material = new THREE.MeshBasicMaterial({color: 0x000000});
+    this._sphere = new THREE.Mesh(geometry, material);
     this._scene.add(this._sphere);
-    
-    //this._primitive.add(new THREE.AxesHelper( 5 ));
     
     /* Create axes */
     this._axesHelper = new THREE.AxesHelper(5);
+    this._group.add(this._axesHelper);
        
     /* Set camera params */
-    this._camera.position.set(0, 100, 100);
+    this._camera.position.set(0, 0, 50);
     this._camera.lookAt(0, 0, 0);
     
-    
     /* Handling group */
-    this._group.add(this._primitive);
-    //this._group.add(this._axesHelper);
-
     this._group.position.set(0, 0, 0);
     this._scene.add(this._group);
 
-    /*this._dragControls = new DragControls( [this._group], this._camera, this._renderer.domElement );
-    this._dragControls.transformGroup = true;*/
-    
-
-    
   }
 
   resize () {
@@ -176,62 +193,53 @@ export default class Minimap {
       /* Mouse response */
 
       /* Check mouse status */
-      if ( this._mouseWork.getIsPressed &&
+      if ( !this._isMouseHandling && this._mouseWork.getIsPressed &&
            this._isMouseCoordsInWindow(this._mouseWork.getPressX, this._mouseWork.getPressY) ) {
-        
-        let raycaster = new THREE.Raycaster();
-        let mouse = new THREE.Vector2();
-
-        const coords = this._getMouseNormWindowCoords(this._mouseWork.mouseX, this._mouseWork.mouseY );
-        mouse.set(coords.x, coords.y);
-          
-        raycaster.setFromCamera( mouse, this._camera );
-
-        // calculate objects intersecting the picking ray
-        /*var intersects = raycaster.intersectObject( this._ );
-      
-        for ( var i = 0; i < intersects.length; i++ ) {
-      
-          intersects[ i ].object.material.color.set( 0xff0000 );
-      
-        }*/
-        var intersect = raycaster.intersectObject( this._primitive );
-      
-        if (intersect.length > 0) {
-          intersect[ 0 ].object.material.color.set( 0x0000ff );
-          this._sphere.position.copy(intersect[ 0 ].point);
-        } else {
-          this._primitive.material.color.set( 0xA9A9A9 );
-        }
-        /*
-        const pixelRatio = window.devicePixelRatio;    
-        let x = -this._mouseWork.getXChange;
-        let y = this._mouseWork.getYChange;
-
-        let tmp = new THREE.Vector3(x, y, 0);
-        let a = tmp.length();
-
-        if (a == 0) {
-          return;
-        }
-
-        tmp.applyMatrix4((new THREE.Matrix4()).getInverse(this._camera.projectionMatrix));
-        let b = tmp.length();
-
-        //console.log(a, b, b / a);
-        this._group.applyMatrix4( (new THREE.Matrix4()).makeTranslation(x * 0.01, y * 0.1, 0) );
-          */
-        this._clearColor = 0x00FF00;
-      } else {
-        this._clearColor = 0xFF0000;
+        this._isFirstMouseResponse = true;
+        this._isMouseHandling = true;
+      }
+      if (!this._mouseWork.getIsPressed) {
+        this._isMouseHandling = false;
       }
 
+             
+      if (this._isMouseHandling) {
+        /* Get intersections */
+        const raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+        const coords = this._getMouseNormWindowCoords(this._mouseWork.mouseX, this._mouseWork.mouseY );
+        mouse.set(coords.x, coords.y);
+        raycaster.setFromCamera(mouse, this._camera);
+        
+        const intersects = raycaster.intersectObjects(this._group.children);
 
 
+
+        /* Intersections response */
+        for (let i = 0; i < intersects.length; i++) {
+          if (intersects[i].object.id === this._surface.id) {
+            this._tmpMemoryV3.copy(intersects[i].point);
+          }
+        }
+
+        /* Movement */
+        if (!this._isFirstMouseResponse) {
+        this._movement(this._lastMousePoint, this._tmpMemoryV3);
+        }
+
+        /* Update last mouse point */
+        this._lastMousePoint.copy(this._tmpMemoryV3);
+
+        /* Response first mouse response flag */
+        this._isFirstMouseResponse = false;
+
+      }
+
+      this._sphere.position.copy(this._lastMousePoint);
     }
   }
 
-
+  /* Get normalize mouse coords in minimap window */
   _getMouseNormWindowCoords (x, y) {
     const pixelRatio = window.devicePixelRatio;
     const resX = (x * pixelRatio - this._curWindowOffsetX) / this._curWindowWidth * 2 - 1;
@@ -239,6 +247,7 @@ export default class Minimap {
     return {x: resX, y: resY};
   }
 
+  /* Check mouse coords are in minimap window */
   _isMouseCoordsInWindow(x, y) {
     const pixelRatio = window.devicePixelRatio;
     return (x * pixelRatio > this._curWindowOffsetX && 
@@ -262,7 +271,8 @@ export default class Minimap {
   }
 
   /* Make movement method */
-  _movement () {
+  _movement (startPoint, endPoint) {
+    this._group.position.add(this._tmpOperationV3.subVectors(endPoint, startPoint));
 
   }
 
