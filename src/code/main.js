@@ -6,7 +6,6 @@ import Minimap from './Minimap/minimap.js';
 import Sidebar from './Sidebar/Sidebar.js';
 
 // import osSchool from '../bin/models/school/MainModel.glb';
-import osSchool from '../bin/models/school/School30Floors.glb';
 import School from './ObjWorking/School.js';
 import CloseImg from '../bin/textures/Close.png';
 import { PhisicsWork } from './Rooms/Physics/PhysicsWidget.mjs';
@@ -21,11 +20,11 @@ class Animate {
     this._scene = new THREE.Scene();
     this.init = this.init.bind(this);
     this.render = this.render.bind(this);
-    // this.ghhhj = new PhisicsWork(document.getElementById('phys'), '10px', '10px', 900, 900, true, true);
+    this.ghhhj = new PhisicsWork(document.getElementById('phys'), 10, 10, 300, 300, true, true);
   }
 
   init () {
-    this.school = new School(osSchool, this._scene);
+    this.school = new School(this._scene);
     const lamp = new THREE.DirectionalLight(0xFFFFFF, 1);
     lamp.position.set(1, 1, 1);
     this._scene.add(lamp);
@@ -50,6 +49,16 @@ class Animate {
       this._resizeCanvas();
       this.Sidebar.resize();
     }, false);
+    const tmp = () => {
+      try {
+        this.school.setFloor(2);
+      } catch (err) { if (err.name === 'NExist') { setTimeout(tmp, 500); } }
+    };
+    tmp.bind(this)();
+
+    this._raycaster = new THREE.Raycaster();
+    this._mouse = new THREE.Vector2();
+    document.addEventListener('mousemove', this._onMouseMove.bind(this), false);
   }
 
   createCamera () {
@@ -74,6 +83,17 @@ class Animate {
   }
 
   render () {
+    this._raycaster.setFromCamera(this._mouse, this._camera.camera);
+
+    const select = this._raycaster.intersectObjects(this._scene.children[1]?.children ?? this._scene.children);
+    if (select.length > 0) {
+      const delTmp = new THREE.MeshPhongMaterial({ color: 0xBBBBBB })
+      this._scene.traverse((o) => {
+        o.material = delTmp;
+      });
+      select[0].object.material = new THREE.MeshPhongMaterial({ color: 0xFF0000 });  
+    }
+
     this._camera.update();
     this._minimap.response();
 
@@ -84,6 +104,13 @@ class Animate {
 
   _drawScene () {
     this._renderer.render(this._scene, this._camera.camera);
+  }
+
+  _onMouseMove (e) {
+    e.preventDefault();
+
+    this._mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    this._mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
   }
 }
 
