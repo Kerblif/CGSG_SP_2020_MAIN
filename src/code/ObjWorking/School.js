@@ -23,12 +23,14 @@ export default class School {
   constructor (scene, camera) {
     this._raycaster = new THREE.Raycaster();
     this._mouse = new THREE.Vector2();
-    document.addEventListener('mousemove', this._onMouseMove.bind(this), false);
 
     this._camera = camera;
     this._scene = scene;
-    this._selectMtl = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
+    this._hoverMtl = new THREE.MeshPhongMaterial({ color: 0xEEEEEE });
     this._deselectMtl = new THREE.MeshPhongMaterial({ color: 0xBBBBBB });
+    this._selectMtl = new THREE.MeshPhongMaterial({ color: 0xFF3333 });
+    document.addEventListener('mousemove', this._onMouseMove.bind(this), false);
+    document.addEventListener('click', this._onMouseClick.bind(this), false);
     let tmp = (obj) => {
       this._school = obj.obj;
       this._school.traverse((obj) => {
@@ -50,6 +52,7 @@ export default class School {
     ModelManager.get({ src: osFloor_3, args: { name: 3 } }).then(tmp);
     ModelManager.get({ src: osFloor_4, args: { name: 4 } }).then(tmp);
     this._cur = new THREE.Object3D();
+    this._hoverObj = {};
     this._selectObj = {};
   }
 
@@ -93,6 +96,10 @@ export default class School {
     return this._school;
   }
 
+  get selectObj () {
+    return this._selectObj;
+  }
+
   /** 1..4 - Floors, 0 - Street view.
    * @param  {Boolean} value - set the keys for switch models.
    */
@@ -105,6 +112,25 @@ export default class School {
   }
 
   _onMouseMove (e) {
+    e.preventDefault();
+
+    this._mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    this._mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    this._raycaster.setFromCamera(this._mouse, this._camera);
+
+    const select = this._raycaster.intersectObjects(this._cur.children);
+    if (select.length > 0 && this._hoverObj !== this._selectObj) {
+      if (select[0].object === this._selectObj) { return; }
+      this._hoverObj.material = this._deselectMtl;
+      select[0].object.material = this._hoverMtl;
+      this._hoverObj = select[0].object;
+    } else {
+      if (this._hoverObj === this._selectObj) { return; }
+      this._hoverObj.material = this._deselectMtl;
+    }
+  }
+
+  _onMouseClick (e) {
     e.preventDefault();
 
     this._mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
