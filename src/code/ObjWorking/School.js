@@ -11,15 +11,18 @@ import osSchool from '../../bin/models/school/MainModel.glb';
  * @constructor
  * @param  {string} message - error message.
  */
-class NExist {
-  constructor (message) {
-    this.name = 'NExist';
-    this.message = (message || '');
-  }
+function NExist (message) {
+  this.name = 'NExist';
+  this.message = (message || '');
 }
 
 /* School event handler */
 export default class School {
+  /**
+   * @constructor
+   * @param  {THREE.Scene} scene - scene to add school model/floors
+   * @param  {THREE.Camera} camera - camera for mouse selector.
+   */
   constructor (scene, camera) {
     this._raycaster = new THREE.Raycaster();
     this._mouse = new THREE.Vector2();
@@ -32,6 +35,8 @@ export default class School {
     this._selectMtl = new THREE.MeshPhongMaterial({ color: 0xFF3333 });
     document.addEventListener('mousemove', this._onMouseMove.bind(this), false);
     document.addEventListener('click', this._onMouseClick.bind(this), false);
+    // document.addEventListener('wheel', this._onMouseWheel.bind(this));
+
     let tmp = (obj) => {
       this._school = obj.obj;
       this._school.traverse((obj) => {
@@ -60,8 +65,8 @@ export default class School {
   /**
    * Set the floor.
    * @throws NExist error.
-   * @param {Number} num - number of floor for set.
-   * @returns (THREE.Object3D) - the model;
+   * @param {number} num - number of floor for set.
+   * @returns {THREE.Object3D} - the model;
    */
   setFloor (num) {
     const model = this._floors[num];
@@ -88,17 +93,13 @@ export default class School {
   /**
    * Set the whole model.
    * @throws NExist  error.
-   * @returns (THREE.Object3D) - the model;
+   * @returns {THREE.Object3D} the model.
    */
   setStreetView () {
     this._scene.remove(this._cur);
     if (this._school === undefined) { throw new NExist('Model onload.'); }
     this._scene.add(this._cur = this._school);
     return this._school;
-  }
-
-  get selectObj () {
-    return this._selectObj;
   }
 
   /** 1..4 - Floors, 0 - Street view.
@@ -117,6 +118,10 @@ export default class School {
    * @param  {Object} obj - selected object.
    */
   selectEvent (obj) {}
+
+  get selectObj () {
+    return this._selectObj;
+  }
 
   _onMouseMove (e) {
     e.preventDefault();
@@ -177,6 +182,7 @@ class RoomsMeta {
     const iRoomName = document.getElementById('iRoomName');
     const iRoomNumber = document.getElementById('iRoomNumber');
     const iRoomLessons = document.getElementById('iRoomLessons');
+    const iRoomInfo = document.getElementById('iRoomInfo');
     this._school.selectEvent = (obj) => {
       iRoomName.value = obj.name;
       (jsonMETA[obj.name] !== undefined) || (
@@ -184,15 +190,18 @@ class RoomsMeta {
         jsonMETA[obj.name] = {};
         jsonMETA[obj.name].num = 0;
         jsonMETA[obj.name].lessons = 'math,physics'.split(',');
+        jsonMETA[obj.name].info = 'classroom in 30';
       }());
       iRoomNumber.value = jsonMETA[obj.name].num;
       iRoomLessons.value = String(jsonMETA[obj.name].lessons);
+      iRoomInfo.value = jsonMETA[obj.name].info;
     };
     const iRoomSubmit = document.getElementById('iRoomSubmit');
     iRoomSubmit.onclick = () => {
       if (jsonMETA[iRoomName.value] !== undefined){
         jsonMETA[iRoomName.value].num = iRoomNumber.value;
         jsonMETA[iRoomName.value].lessons = iRoomLessons.value.split(',');
+        jsonMETA[iRoomName.value].info = iRoomInfo.value;
       }
     }
   }
