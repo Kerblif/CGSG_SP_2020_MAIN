@@ -16,7 +16,6 @@ export class PhisicsWork {
     this.flag.style.position = 'absolute';
     this.flag.style.top = '15px';
     this.flag.style.right = w + 'px';
-    console.log(this.flag.style);
     this.physPanel.appendChild(this.flag);
 
     this.image = document.createElement('img');
