@@ -36,7 +36,9 @@ class Animate {
     this._minimap.init(100, 100, "./src/bin/minimap/",
                         [
                           "floor_01.jpg",
-                          "floor_02.jpg"
+                          "floor_02.jpg",
+                          "floor_03.jpg",
+                          "floor_04.jpg",
                         ]);
  
     this._resizeCanvas();

@@ -6,6 +6,7 @@ import {OrbitControls} from '../../../node_modules/three/examples/jsm/controls/O
 
 import vertShaderStrMinimap from './minimap_vert.glsl';
 import fragShaderStrMinimap from './minimap_frag.glsl';
+import txtSchoolMarking from '../../bin/minimap/school_marking.txt';
 
 /* Minimap clas */
 export default class Minimap {
@@ -63,7 +64,8 @@ export default class Minimap {
     this._editorCurFloor = -1;
     this._editorCurRoom = -1;
 
-    
+    /* School marking object */
+    this._schoolMarking = JSON.parse(txtSchoolMarking);
   }
 
   /* Initialization method */
@@ -92,22 +94,51 @@ export default class Minimap {
 
     geometry = new THREE.PlaneGeometry(mapWidth, mapHeight, 1, 1);
     material = new THREE.ShaderMaterial( {
+      defines: {
+        NUM_OF_FLOORS: Object.keys(this._schoolMarking).length,
+        FLOOR_NUMBER: 0 
+      },
       //side: THREE.DoubleSide,
       uniforms: {
         uTexFloors: {value: this._texFloors},
+        uCurFloor: {value: this._editorCurFloor},
       },
       vertexShader: vertShaderStrMinimap,
       fragmentShader: fragShaderStrMinimap
     } );
 
-
-    /*
-    material = new THREE.MeshBasicMaterial({color: 0xA9A9A9, 
-                                            side: THREE.DoubleSide,
-                                            map: this._texFloors[this._curFloor]});
-    */
     this._plane = new THREE.Mesh(geometry, material);
     this._group.add(this._plane);
+
+    /* Create rooms */
+    material = new THREE.MeshBasicMaterial({color: 0x00FF00});
+
+    this._floors = [];
+    for (let i = 0; i < Object.keys(this._schoolMarking).length; i++ ) {
+      this._floors.push(new THREE.Group());
+      this._floors[i].name = `floor_${i}`;
+      this._group.add(this._floors[i]);
+
+      for (let j = 0; j < Object.keys(this._schoolMarking[`floor_${i}`]).length; j++) {
+        
+        let shape = new THREE.Shape();
+        const room = this._schoolMarking[`floor_${i}`][`room_${j}`];
+        let startPoint = {};
+        startPoint.x = room[room.length - 1].x * this._planeWidth * 0.5;
+        startPoint.y = room[room.length - 1].y * this._planeHeight * 0.5;
+
+        shape.moveTo(startPoint.x, startPoint.y);
+        for (const coord of room) {
+          shape.lineTo(coord.x * this._planeWidth * 0.5, coord.y *= this._planeHeight * 0.5);
+        }
+
+        geometry = new THREE.ShapeGeometry(shape);
+        let primitive = new THREE.Mesh(geometry, material);
+        primitive.visible = false;
+        primitive.name = `room_${j}`;
+        this._floors[i].add(primitive);
+      }
+    }
         
     /* Create surface */
     geometry = new THREE.PlaneGeometry(1000, 1000, 1, 1);
@@ -116,7 +147,7 @@ export default class Minimap {
     this._surface.visible = false;
     this._group.add(this._surface);
 
-    /* Create sphere */
+    /* Create pointer */
     //geometry = new THREE.SphereGeometry(0.2, 20, 20);
     geometry = new THREE.TorusGeometry(0.4, 0.06, 20, 20);
     material = new THREE.MeshBasicMaterial({color: 0xFF0000});
@@ -222,20 +253,24 @@ export default class Minimap {
         mouse.set(coords.x, coords.y);
         raycaster.setFromCamera(mouse, this._camera);
         
-        const intersects = raycaster.intersectObjects(this._group.children);
-
+        const intersects = raycaster.intersectObjects([this._group], true);
 
 
         /* Intersections response */
         for (let i = 0; i < intersects.length; i++) {
           if (intersects[i].object.id === this._surface.id) {
+            /* Surface */
             this._tmpMemoryV3.copy(intersects[i].point);
+          } else if (intersects[i].object.parent === this._floors[this._curFloor]) {
+            /* Rooms */
+            intersects[i].object.visible = true;
           }
+
         }
 
         /* Movement */
         if (!this._isFirstMouseResponse) {
-        this._movement(this._lastMousePoint, this._tmpMemoryV3);
+          this._movement(this._lastMousePoint, this._tmpMemoryV3);
         }
 
         /* Update last mouse point */
@@ -247,9 +282,19 @@ export default class Minimap {
       }
 
       this._pointer.position.copy(this._lastMousePoint);
+
+      /* Keyboard upadte */
       this._keyboardWork.update();
 
+      /* Shaders uniforms update */
+      this._plane.material.uniforms.uCurFloor.value = this._editorCurFloor;
+
     }
+  }
+  
+  /* Room selector method */
+  _roomSelecter (coords) {
+
   }
 
   /* Get normalize mouse coords in minimap window */
@@ -324,6 +369,8 @@ export default class Minimap {
         this._editorCurFloor += 1;
         this._editorSchoolMarking[`floor_${this._editorCurFloor}`] = {};
         console.log(`Added floor #${this._editorCurFloor}`);
+
+        this._curFloor += 1; 
         break;
       case 'KeyR':
         if (this._editorSchoolMarking[`floor_${this._editorCurFloor}`] === undefined) { break };
