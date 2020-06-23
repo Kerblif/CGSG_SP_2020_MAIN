@@ -20,7 +20,7 @@ class Animate {
     this._scene = new THREE.Scene();
     this.init = this.init.bind(this);
     this.render = this.render.bind(this);
-    this.ghhhj = new PhisicsWork(document.getElementById('phys'), 10, 10, 300, 300, true, true);
+    this.ghhhj = new PhisicsWork('phys', 400);
   }
 
   init () {

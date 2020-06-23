@@ -75,7 +75,6 @@ export default class Camera {
         if (DirX !== 0) { this._xAngle *= Math.sign(DirX); }
       }
       this._yAngle = Math.asin(DirY / this._lenght);
-      console.log(this._lenght);
     }
 
     this._updatecamera();
