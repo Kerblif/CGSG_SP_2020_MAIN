@@ -179,12 +179,12 @@ class RoomsMeta {
    */
   constructor (school) {
     this._school = school;
-    const iRoomName = document.getElementById('iRoomName');
+    const lRoomName = document.getElementById('lRoomName');
     const iRoomNumber = document.getElementById('iRoomNumber');
     const iRoomLessons = document.getElementById('iRoomLessons');
     const iRoomInfo = document.getElementById('iRoomInfo');
     this._school.selectEvent = (obj) => {
-      iRoomName.value = obj.name;
+      lRoomName.innerText = obj.name;
       (jsonMETA[obj.name] !== undefined) || (
       !function () {
         jsonMETA[obj.name] = {};
