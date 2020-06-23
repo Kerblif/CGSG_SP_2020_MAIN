@@ -111,6 +111,12 @@ export default class School {
     }
   }
 
+  /**
+   * Called, when new object select.
+   * @param  {Object} obj - selected object.
+   */
+  selectEvent (obj) {}
+
   _onMouseMove (e) {
     e.preventDefault();
 
@@ -142,6 +148,7 @@ export default class School {
       this._selectObj.material = this._deselectMtl;
       select[0].object.material = this._selectMtl;
       this._selectObj = select[0].object;
+      this.selectEvent(this._selectObj);
     } else {
       this._selectObj.material = this._deselectMtl;
     }
