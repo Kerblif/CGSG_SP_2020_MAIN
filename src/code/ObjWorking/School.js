@@ -23,6 +23,7 @@ export default class School {
   constructor (scene, camera) {
     this._raycaster = new THREE.Raycaster();
     this._mouse = new THREE.Vector2();
+    this._roomsMeta = new RoomsMeta(this);
 
     this._camera = camera;
     this._scene = scene;
@@ -161,6 +162,38 @@ export default class School {
       case 'Digit2': this.setFloor(2); break;
       case 'Digit3': this.setFloor(3); break;
       case 'Digit4': this.setFloor(4); break;
+    }
+  }
+}
+
+const jsonMETA = {};
+
+class RoomsMeta {
+  /**
+   * @param  {School} school - School class representation.
+   */
+  constructor (school) {
+    this._school = school;
+    const iRoomName = document.getElementById('iRoomName');
+    const iRoomNumber = document.getElementById('iRoomNumber');
+    const iRoomLessons = document.getElementById('iRoomLessons');
+    this._school.selectEvent = (obj) => {
+      iRoomName.value = obj.name;
+      (jsonMETA[obj.name] !== undefined) || (
+      !function () {
+        jsonMETA[obj.name] = {};
+        jsonMETA[obj.name].num = 0;
+        jsonMETA[obj.name].lessons = 'math,physics'.split(',');
+      }());
+      iRoomNumber.value = jsonMETA[obj.name].num;
+      iRoomLessons.value = String(jsonMETA[obj.name].lessons);
+    };
+    const iRoomSubmit = document.getElementById('iRoomSubmit');
+    iRoomSubmit.onclick = () => {
+      if (jsonMETA[iRoomName.value] !== undefined){
+        jsonMETA[iRoomName.value].num = iRoomNumber.value;
+        jsonMETA[iRoomName.value].lessons = iRoomLessons.value.split(',');
+      }
     }
   }
 }

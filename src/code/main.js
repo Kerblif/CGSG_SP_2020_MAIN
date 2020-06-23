@@ -56,9 +56,6 @@ class Animate {
       } catch (err) { if (err.name === 'NExist') { setTimeout(tmp, 500); } }
     };
     tmp.bind(this)();
-
-    const iRoomName = document.getElementById('iRoomName');
-    this.school.selectEvent = (obj) => { iRoomName.value = obj.name; };
   }
 
   createCamera () {
