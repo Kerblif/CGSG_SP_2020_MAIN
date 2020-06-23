@@ -5,6 +5,7 @@ import osFloor_2 from '../../bin/models/school/2_Floor.glb';
 import osFloor_3 from '../../bin/models/school/3_Floor.glb';
 import osFloor_4 from '../../bin/models/school/4_Floor.glb';
 import osSchool from '../../bin/models/school/MainModel.glb';
+// import osSchool from '../../bin/models/school/pml30light.glb';
 
 /**
  * Error of not exist (undefined) properties.
@@ -185,24 +186,23 @@ class RoomsMeta {
     const iRoomInfo = document.getElementById('iRoomInfo');
     this._school.selectEvent = (obj) => {
       lRoomName.innerText = obj.name;
-      (jsonMETA[obj.name] !== undefined) || (
-      !function () {
+      (jsonMETA[obj.name] !== undefined) || ((function () {
         jsonMETA[obj.name] = {};
         jsonMETA[obj.name].num = 0;
         jsonMETA[obj.name].lessons = 'math,physics'.split(',');
         jsonMETA[obj.name].info = 'classroom in 30';
-      }());
+      })());
       iRoomNumber.value = jsonMETA[obj.name].num;
       iRoomLessons.value = String(jsonMETA[obj.name].lessons);
       iRoomInfo.value = jsonMETA[obj.name].info;
     };
     const iRoomSubmit = document.getElementById('iRoomSubmit');
     iRoomSubmit.onclick = () => {
-      if (jsonMETA[iRoomName.value] !== undefined){
-        jsonMETA[iRoomName.value].num = iRoomNumber.value;
-        jsonMETA[iRoomName.value].lessons = iRoomLessons.value.split(',');
-        jsonMETA[iRoomName.value].info = iRoomInfo.value;
+      if (jsonMETA[lRoomName.innerText] !== undefined) {
+        jsonMETA[lRoomName.innerText].num = iRoomNumber.value;
+        jsonMETA[lRoomName.innerText].lessons = iRoomLessons.value.split(',');
+        jsonMETA[lRoomName.innerText].info = iRoomInfo.value;
       }
-    }
+    };
   }
 }
