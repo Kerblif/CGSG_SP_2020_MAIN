@@ -4,8 +4,8 @@ import { Vector3 } from 'three';
 
 import {OrbitControls} from '../../../node_modules/three/examples/jsm/controls/OrbitControls.js';
 
-import vertShaderStrMinimap from './minimap_vert.glsl';
-import fragShaderStrMinimap from './minimap_frag.glsl';
+import vertShaderStrPlane from './plane_vert.glsl';
+import fragShaderStrPlane from './plane_frag.glsl';
 import txtSchoolMarking from '../../bin/minimap/school_marking.txt';
 
 /* Minimap clas */
@@ -81,8 +81,7 @@ export default class Minimap {
     this._curFloor = 0;
 
     /* Animation params */
-    this._isAnimation = false;
-    this._currentAnimation = undefined;
+    this._animation = undefined;
 
     /* Create primitives */
     let geometry;
@@ -102,21 +101,36 @@ export default class Minimap {
       uniforms: {
         uTexFloors: {value: this._texFloors},
         uCurFloor: {value: this._editorCurFloor},
+        uAnim: { 
+          value: {
+            mode: -1,
+            progress: 0,
+            numStep: 0,
+            texture_01: this._texFloors[0],
+            texture_02: this._texFloors[0],
+            color_01: new THREE.Vector3(0, 0, 0),
+            color_02: new THREE.Vector3(0, 0, 0),
+            coefBlend: 0
+          }
+        }
       },
-      vertexShader: vertShaderStrMinimap,
-      fragmentShader: fragShaderStrMinimap
+      vertexShader: vertShaderStrPlane,
+      fragmentShader: fragShaderStrPlane
     } );
 
     this._plane = new THREE.Mesh(geometry, material);
+    this._plane.position.z = 0;
     this._group.add(this._plane);
 
     /* Create rooms */
     material = new THREE.MeshBasicMaterial({color: 0x00FF00});
 
     this._floors = [];
-    for (let i = 0; i < Object.keys(this._schoolMarking).length; i++ ) {
+    this._numOfFloors = Object.keys(this._schoolMarking).length;
+    for (let i = 0; i < this._numOfFloors; i++ ) {
       this._floors.push(new THREE.Group());
       this._floors[i].name = `floor_${i}`;
+      this._floors[i].position.z = 0.5;
       this._group.add(this._floors[i]);
 
       for (let j = 0; j < Object.keys(this._schoolMarking[`floor_${i}`]).length; j++) {
@@ -152,6 +166,7 @@ export default class Minimap {
     geometry = new THREE.TorusGeometry(0.4, 0.06, 20, 20);
     material = new THREE.MeshBasicMaterial({color: 0xFF0000});
     this._pointer = new THREE.Mesh(geometry, material);
+    this._pointer.position.z = 0.5;
     this._scene.add(this._pointer);
     
     /* Create axes */
@@ -226,9 +241,10 @@ export default class Minimap {
   response () {
   
 
-    /* Check animation */
-    if (this._isAnimation) {
-      /* Check animation progress */
+    /* Check animation progress */
+    if (this._animation !== undefined && this._animation.isInProgress) {
+      /* Animation response */
+      this._animation.response();
       
 
     } else {
@@ -244,7 +260,6 @@ export default class Minimap {
         this._isMouseHandling = false;
       }
 
-             
       if (this._isMouseHandling) {
         /* Get intersections */
         const raycaster = new THREE.Raycaster();
@@ -255,13 +270,13 @@ export default class Minimap {
         
         const intersects = raycaster.intersectObjects([this._group], true);
 
-
         /* Intersections response */
         for (let i = 0; i < intersects.length; i++) {
           if (intersects[i].object.id === this._surface.id) {
             /* Surface */
             this._tmpMemoryV3.copy(intersects[i].point);
-          } else if (intersects[i].object.parent === this._floors[this._curFloor]) {
+          } else if (intersects[i].object.parent === this._floors[this._curFloor] &&
+                     this._isFirstMouseResponse) {
             /* Rooms */
             intersects[i].object.visible = true;
           }
@@ -316,13 +331,12 @@ export default class Minimap {
 
   /* Set floor method */
   setFloor (floor) {
+    //!!!!!!!!!!!!!!!!!!!!!!
+    if (floor === undefined || floor === this._curFloor ||
+        floor < 0 || floor >= 4 /*this._numOfFloors*/) { return };
 
     /* Set animation */
-    if (floor != this._curFloor) {
-      /* Changing floor animation */
-      this._isAnimation = true;
-      //this._currentAnimation = ...
-    }
+    this._animation = new AnimChangeFloor(this, 5, this._curFloor, floor);
 
     /* Set current floor */
     this._curFloor = floor;
@@ -333,12 +347,6 @@ export default class Minimap {
     if (this._isMoveable) {
     this._group.position.add(this._tmpOperationV3.subVectors(endPoint, startPoint));
     }
-
-  }
-
-  /* Handle mouse click  method */
-  _responseClick () {
-
 
   }
 
@@ -398,6 +406,11 @@ export default class Minimap {
         this._isKeysLock = true;
         console.log(JSON.stringify(this._editorSchoolMarking));
         break;
+      case 'KeyV':
+          this._isKeysLock = true;
+          // !!!!!!!!!!!!!!!!!s
+          this.setFloor((this._curFloor + 1) % 4);
+          break;
     } 
   }
 
@@ -405,16 +418,96 @@ export default class Minimap {
 
 
 class MinimapAnimation {
-  constructor () {
+  constructor (minimap, duration) {
+    this._minimap = minimap;
+    this._duration = duration;
 
-
+    this.isInProgress = true;
+    this._startTime = Date.now();
+    this._progress = 0;
+    this._step = 0;
   }
 
   /* Response animation method */
   response () {
-
+    this._progress = ((Date.now() - this._startTime) / 1000.0) / this._duration;
   }
 
+  _end() {
+    this.isInProgress = false;
+  }
+  
+
+}
+
+
+class AnimChangeFloor extends MinimapAnimation {
+  constructor (minimap, duration, startFloor, endFloor) {
+    super(minimap, duration);
+    this._startFloor = startFloor;
+    this._endFloor = endFloor;
+
+    this._startPlaneZ = this._minimap._plane.position.z;
+    this._startRoomsZ = this._minimap._plane.position.z;
+    this._deltaPlaneZ = 40;
+
+    /* Constant uniforms */
+    this._minimap._plane.material.uniforms.uAnim.value.mode = 0;
+    this._minimap._plane.material.uniforms.uAnim.value.texture_01 = this._minimap._texFloors[this._startFloor];
+    this._minimap._plane.material.uniforms.uAnim.value.texture_02 = this._minimap._texFloors[this._endFloor];
+    this._minimap._plane.material.uniforms.uAnim.value.color_01 = (new THREE.Color()).set(0x191970);
+    this._minimap._plane.material.uniforms.uAnim.value.color_02 = (new THREE.Color()).set(0xFFFAFA);
+  }
+
+  response () {
+    super.response();
+
+    if (this._progress >= 1.0) {
+      this._end();
+      return;
+    }
+
+    /* Movement */
+    this._minimap._plane.position.z = this._startPlaneZ -
+        this._deltaPlaneZ * ( 1 - Math.abs(2 * this._progress - 1) );
+    
+   
+    switch (this._step) {
+      case 0:
+        if (this._progress > 0.3) {
+          this._step++;
+          break;
+        };
+
+        /* Uniforms */
+        this._minimap._plane.material.uniforms.uAnim.value.numStep = this._step;
+        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = this._progress / 0.3;
+        break;
+
+      case 1:
+        if (this._progress > 0.7) {
+          this._step++;
+          break;
+        };
+
+        /* Uniforms */
+        this._minimap._plane.material.uniforms.uAnim.value.numStep = this._step;
+        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = 1;
+        break;
+
+      case 2:
+        /* Uniforms */
+        this._minimap._plane.material.uniforms.uAnim.value.numStep = this._step;
+        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = (this._progress - 0.7) / 0.3;
+        break;
+    }
+  }
+
+  _end() {
+    super._end();
+    this._minimap._plane.position.z = this._startPlaneZ;
+    this._minimap._plane.material.uniforms.uAnim.value.numStep = -1;
+  }
 }
 
 

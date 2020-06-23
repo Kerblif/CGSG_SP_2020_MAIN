@@ -1,4 +1,4 @@
-/* Minimap fragment shader */
+/* Room fragment shader */
 
 #define PI 3.1415926535
 

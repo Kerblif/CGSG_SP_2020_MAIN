@@ -1,4 +1,4 @@
-/* Minimap vertex shader */
+/* Room vertex shader */
 
 uniform float uTime;
 
