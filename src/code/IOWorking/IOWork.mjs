@@ -1,3 +1,4 @@
+
 export class KeyboardWork {
   constructor (inputfunc, elemet = document) {
     this._arr = new Set();
