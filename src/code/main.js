@@ -24,11 +24,12 @@ class Animate {
   }
 
   init () {
-    this.school = new School(this._scene);
     const lamp = new THREE.DirectionalLight(0xFFFFFF, 1);
     lamp.position.set(1, 1, 1);
     this._scene.add(lamp);
     this.createCamera();
+    this.school = new School(this._scene, this._camera.camera);
+    this.school._debugKeysSwitcher = true;
 
     this._minimap = new Minimap(this._canvas, this._renderer, true,
       0.01, 0.01, 0.2, 0.2);
@@ -56,9 +57,8 @@ class Animate {
     };
     tmp.bind(this)();
 
-    this._raycaster = new THREE.Raycaster();
-    this._mouse = new THREE.Vector2();
-    document.addEventListener('mousemove', this._onMouseMove.bind(this), false);
+    const iRoomName = document.getElementById('iRoomName');
+    this.school.selectEvent = (obj) => { iRoomName.value = obj.name; };
   }
 
   createCamera () {
@@ -83,17 +83,6 @@ class Animate {
   }
 
   render () {
-    this._raycaster.setFromCamera(this._mouse, this._camera.camera);
-
-    const select = this._raycaster.intersectObjects(this._scene.children[1]?.children ?? this._scene.children);
-    if (select.length > 0) {
-      const delTmp = new THREE.MeshPhongMaterial({ color: 0xBBBBBB })
-      this._scene.traverse((o) => {
-        o.material = delTmp;
-      });
-      select[0].object.material = new THREE.MeshPhongMaterial({ color: 0xFF0000 });  
-    }
-
     this._camera.update();
     this._minimap.response();
 
@@ -104,13 +93,6 @@ class Animate {
 
   _drawScene () {
     this._renderer.render(this._scene, this._camera.camera);
-  }
-
-  _onMouseMove (e) {
-    e.preventDefault();
-
-    this._mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    this._mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
   }
 }
 
