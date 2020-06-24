@@ -35,7 +35,7 @@ export default class School {
     this._deselectMtl = new THREE.MeshPhongMaterial({ color: 0xBBBBBB });
     this._selectMtl = new THREE.MeshPhongMaterial({ color: 0xFF3333 });
     document.addEventListener('mousemove', this._onMouseMove.bind(this), false);
-    document.addEventListener('click', this._onMouseClick.bind(this), false);
+    document.addEventListener('dblclick', this._onMouseClick.bind(this), false);
     // document.addEventListener('wheel', this._onMouseWheel.bind(this));
 
     let tmp = (obj) => {
@@ -81,7 +81,7 @@ export default class School {
 
   /**
    * Called when floor changed.
-   * @param {number} num - the floor number.
+   * @param {number} num - the floor number: 1..4.
    */
   EventChangeFloor (num) {}
 
@@ -89,6 +89,7 @@ export default class School {
    * Set the room.
    * @throws NExist error.
    * @param {string} name - name of room.
+   * @returns {THREE.Object3D} - the model;
    */
   setRoom (name) {
     const obj = this._cur.getObjectById(name);
@@ -96,7 +97,15 @@ export default class School {
     const delTmp = this._deselectMtl;
     this._cur.traverse((o) => { o.material = delTmp; });
     obj.material = this._selectMtl;
+    this.EventChangeRoom(name);
+    return obj;
   }
+
+  /**
+   * Called when room changed.
+   * @param {string} name - the room name.
+   */
+  EventChangeRoom (name) {}
 
   /**
    * Set the whole model.
@@ -107,8 +116,14 @@ export default class School {
     this._scene.remove(this._cur);
     if (this._school === undefined) { throw new NExist('Model onload.'); }
     this._scene.add(this._cur = this._school);
+    this.EventStreetView();
     return this._school;
   }
+
+  /**
+   * Called when set the street view.
+   */
+  EventStreetView () {}
 
   /** 1..4 - Floors, 0 - Street view.
    * @param  {Boolean} value - set the keys for switch models.
@@ -125,7 +140,7 @@ export default class School {
    * Called, when new object select.
    * @param  {Object} obj - selected object.
    */
-  selectEvent (obj) {}
+  EventSelect (obj) {}
 
   get selectObj () {
     return this._selectObj;
@@ -159,7 +174,7 @@ export default class School {
       this._selectObj.material = this._deselectMtl;
       select[0].object.material = this._selectMtl;
       this._selectObj = select[0].object;
-      this.selectEvent(this._selectObj);
+      this.EventSelect(this._selectObj);
     } else {
       this._selectObj.material = this._deselectMtl;
     }
@@ -188,7 +203,7 @@ class RoomsMeta {
     const iRoomNumber = document.getElementById('iRoomNumber');
     const iRoomLessons = document.getElementById('iRoomLessons');
     const iRoomInfo = document.getElementById('iRoomInfo');
-    this._school.selectEvent = (obj) => {
+    this._school.EventSelect = (obj) => {
       lRoomName.innerText = obj.name;
       (jsonMETA[obj.name] !== undefined) || ((function () {
         jsonMETA[obj.name] = {};
