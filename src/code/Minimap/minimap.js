@@ -264,7 +264,8 @@ export default class Minimap {
         /* Get intersections */
         const raycaster = new THREE.Raycaster();
         let mouse = new THREE.Vector2();
-        const coords = this._getMouseNormWindowCoords(this._mouseWork.mouseX, this._mouseWork.mouseY );
+        const coords = this._getMouseNormWindowCoords(this._mouseWork.getMouseX, this._mouseWork.getMouseY);
+
         mouse.set(coords.x, coords.y);
         raycaster.setFromCamera(mouse, this._camera);
         

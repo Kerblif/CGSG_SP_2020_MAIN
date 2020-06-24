@@ -6,11 +6,9 @@ import Minimap from './Minimap/minimap.js';
 import Sidebar from './Sidebar/Sidebar.js';
 
 // import osSchool from '../bin/models/school/MainModel.glb';
-import osSchool from '../bin/models/school/School30Floors.glb';
 import School from './ObjWorking/School.js';
 import CloseImg from '../bin/textures/Close.png';
-//fs.writeFileSync("txt.txt", "my text",  "ascii")
-
+import { PhisicsWork } from './Rooms/Physics/PhysicsWidget.mjs';
 
 class Animate {
   constructor (canvas) {
@@ -22,14 +20,16 @@ class Animate {
     this._scene = new THREE.Scene();
     this.init = this.init.bind(this);
     this.render = this.render.bind(this);
+    this.ghhhj = new PhisicsWork('phys', 400);
   }
 
   init () {
-    this.school = new School(osSchool, this._scene);
     const lamp = new THREE.DirectionalLight(0xFFFFFF, 1);
     lamp.position.set(1, 1, 1);
     this._scene.add(lamp);
     this.createCamera();
+    this.school = new School(this._scene, this._camera.camera);
+    this.school._debugKeysSwitcher = true;
 
     this._minimap = new Minimap(this._canvas, this._renderer, true,
                                 0.01, 0.01, 0.25, 0.25);
@@ -40,7 +40,8 @@ class Animate {
                           "floor_03.jpg",
                           "floor_04.jpg",
                         ]);
- 
+
+
     this._resizeCanvas();
 
     this.Sidebar = new Sidebar(512, 'info', CloseImg);
@@ -52,11 +53,17 @@ class Animate {
       this._resizeCanvas();
       this.Sidebar.resize();
     }, false);
+    const tmp = () => {
+      try {
+        this.school.setFloor(1);
+      } catch (err) { if (err.name === 'NExist') { setTimeout(tmp, 500); } }
+    };
+    tmp.bind(this)();
   }
 
   createCamera () {
-    this._camera = new Camera(45, 0.1, 1000, true);
-    this._camera.set({ x: 100, y: 30, z: 10 });
+    this._camera = new Camera(45, 0.1, 1000, true, this._canvas);
+    this._camera.cameraSet({ x: 100, y: 30, z: 10 });
     this._camera.targetSet({ x: 0, y: 0, z: 30 });
   }
 

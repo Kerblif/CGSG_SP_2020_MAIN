@@ -9,11 +9,17 @@ body, html{
     display: block;
 }
 
+#phys {
+    background-color: rgb(218, 233, 241);
+    width: 0px;
+    position: absolute;
+}
+
 #info {
     background-color: rgb(218, 233, 241);
     width: 0px;
     position: absolute;
-    transition: left .47s ease-out;
+    transition: left .5s ease-out;
 }
 
 .text {
@@ -34,4 +40,33 @@ body, html{
 
 #close:hover {
     cursor: w-resize;
+}
+
+#physflag:hover {
+    cursor: pointer;
+}
+
+input[type=text], select {
+  width: 90%;
+  padding: 12px 20px;
+  margin: 8px;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+  
+input[type=submit] {
+  width: 90%;
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 20px;
+  margin: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+input[type=submit]:hover {
+  background-color: #45a049;
 }

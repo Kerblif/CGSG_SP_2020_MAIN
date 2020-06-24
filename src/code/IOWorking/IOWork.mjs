@@ -1,115 +1,100 @@
+
 export class KeyboardWork {
-  constructor (inputfunc) {
-    this.arr = new Set();
-    this.inputfunc = inputfunc;
+  constructor (inputfunc, elemet = document) {
+    this._arr = new Set();
+    this._inputfunc = inputfunc;
 
-    const add = (e) => { this.arr.add(e.code); };
+    elemet.addEventListener('keydown', (e) => { this._arr.add(e.code); });
 
-    let func = add.bind(this);
-
-    document.addEventListener('keydown', func);
-
-    const remove = (e) => { this.arr.delete(e.code); };
-
-    func = remove.bind(this);
-
-    document.addEventListener('keyup', func);
+    document.addEventListener('keyup', (e) => { this._arr.delete(e.code); });
   }
 
   update () {
-    for (const i of this.arr) {
-      this.inputfunc(i);
+    for (const i of this._arr) {
+      this._inputfunc(i);
     }
   }
 }
 
 export class MouseWork {
-  constructor () {
-    this.transX = 0.0; this.transY = 0.0; this.transZ = 10.0;
-    this.mouseX = 0.0; this.mouseY = 0.0;
-    this.mouseXChange = 0.0; this.mouseYChange = 0.0;
-    this.isPressed = false;
+  constructor (elemet = document) {
+    this._transZ = 10.0;
+    this._mouseX = 0.0; this._mouseY = 0.0;
+    this._mouseXChange = 0.0; this._mouseYChange = 0.0;
+    this._isPressed = false;
 
-    let func = this.onWheel.bind(this);
+    elemet.addEventListener('wheel', (event) => {
+      if (this._transZ > -event.deltaY * 3 / 10000) {
+        this._transZ += event.deltaY * 3 / 10000;
+      }
+    });
 
-    document.addEventListener('wheel', func);
+    document.addEventListener('mousemove', (event) => {
+      if (this._startPosX === undefined) {
+        this._startPosX = event.pageX;
+      }
 
-    func = this.onMouseChangePos.bind(this);
+      if (this._startPosY === undefined) {
+        this._startPosY = event.pageY;
+      }
 
-    document.addEventListener('mousemove', func);
+      this._mouseXChange = this._startPosX - event.pageX;
+      this._startPosX = event.pageX;
 
-    func = this.onMouseMove.bind(this);
+      this._mouseYChange = this._startPosY - event.pageY;
+      this._startPosY = event.pageY;
 
-    document.onmousedown = (event) => {
-      this.pressX = event.pageX;
-      this.pressY = event.pageY;
-      this.isPressed = true;
+      this._mouseX = event.pageX;
+      this._mouseY = event.pageY;
+    });
 
-      this.startPosX = event.pageX;
-      this.startPosY = event.pageY;
-      document.addEventListener('mousemove', func);
-    };
+    elemet.addEventListener('mousedown', (event) => {
+      this._pressX = event.pageX;
+      this._pressY = event.pageY;
+      this._isPressed = true;
+    });
 
-    window.onmouseup = () => {
-      this.isPressed = false;
-      document.removeEventListener('mousemove', func);
-    };
-  }
-
-  onWheel (event) {
-    if (this.transZ > -event.deltaY * 3 / 10000) {
-      this.transZ += event.deltaY * 3 / 10000;
-    }
-  }
-
-  onMouseMove (event) {
-    this.mouseXChange = this.startPosX - event.pageX;
-    this.transX += this.mouseXChange;
-    this.startPosX = event.pageX;
-
-    this.mouseYChange = this.startPosY - event.pageY;
-    this.transY += this.mouseYChange;
-    this.startPosY = event.pageY;
-  }
-
-  onMouseChangePos (event) {
-    this.mouseX = event.offsetX;
-    this.mouseY = event.offsetY;
-  }
-
-  get getTransX () {
-    return this.transX;
-  }
-
-  get getTransY () {
-    return this.transY;
+    window.addEventListener('mouseup', () => { this._isPressed = false; });
   }
 
   get getXChange () {
-    const change = this.mouseXChange;
-    this.mouseXChange = 0;
+    const change = this._mouseXChange;
+    this._mouseXChange = 0;
     return change;
   }
 
   get getYChange () {
-    const change = this.mouseYChange;
-    this.mouseYChange = 0;
+    const change = this._mouseYChange;
+    this._mouseYChange = 0;
     return change;
   }
 
   get getTransZ () {
-    return this.transZ;
+    return this._transZ;
   }
 
   get getIsPressed () {
-    return this.isPressed;
+    return this._isPressed;
   }
 
   get getPressX () {
-    return this.pressX;
+    return this._pressX;
   }
 
   get getPressY () {
-    return this.pressY;
+    return this._pressY;
+  }
+
+  get getMouseX () {
+    return this._mouseX;
+  }
+
+  get getMouseY () {
+    return this._mouseY;
+  }
+
+  update () {
+    this._mouseXChange = 0;
+    this._mouseYChange = 0;
   }
 }
