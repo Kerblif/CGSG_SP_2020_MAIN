@@ -139,17 +139,11 @@ export default class School {
     this._raycaster.setFromCamera(this._mouse, this._camera);
 
     const select = this._raycaster.intersectObjects(this._cur.children);
-    if (select[0].object === this._selectObj) { return; }
+    if (this._selectObj !== this._hoverObj) { this._hoverObj.material = this._deselectMtl; }
     if (select.length > 0) {
-      if (this._selectObj !== this._hoverObj) {
-        this._hoverObj.material = this._deselectMtl;
-      }
+      if (select[0].object === this._selectObj) { return; }
       select[0].object.material = this._hoverMtl;
       this._hoverObj = select[0].object;
-    } else {
-      if (this._selectObj !== this._hoverObj) {
-        this._hoverObj.material = this._deselectMtl;
-      }
     }
   }
 
