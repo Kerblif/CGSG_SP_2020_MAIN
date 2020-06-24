@@ -212,7 +212,7 @@ export default class Minimap {
     this._group.add(this._axesHelper);
        
     /* Set camera params */
-    this._camera.position.set(0, 0, 50);
+    this._camera.position.set(0, 0, 75);
     this._camera.lookAt(0, 0, 0);
     
     /* Handling group */
@@ -338,7 +338,7 @@ export default class Minimap {
       this._pointer.position.copy(this._lastMousePoint);
 
       /* Keyboard upadte */
-      this._keyboardWork.update();
+      //this._keyboardWork.update();
 
       /* Shaders uniforms update */
       this._plane.material.uniforms.uCurFloor.value = this._editorCurFloor;
@@ -348,7 +348,6 @@ export default class Minimap {
   
   /* Room selector method */
   _roomSelecter (selectedRoom) {
-    //return;
     _setForEach( this._floors.getObjectByName(`floor_${this._curFloor}`).children, 
                  {visible: false});
 
