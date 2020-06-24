@@ -32,7 +32,7 @@ class Animate {
     this.school._debugKeysSwitcher = true;
 
     this._minimap = new Minimap(this._canvas, this._renderer, true,
-                                0.01, 0.01, 0.25, 0.25);
+                                0.01, 0.01, 0.25, 0.25 * this._canvas.width / this._canvas.height);
     this._minimap.init(100, 100, "./src/bin/minimap/",
                         [
                           "floor_01.jpg",
@@ -92,7 +92,7 @@ class Animate {
   }
 
   _drawScene () {
-    this._renderer.render(this._scene, this._camera.camera);
+    //this._renderer.render(this._scene, this._camera.camera);
   }
 }
 
