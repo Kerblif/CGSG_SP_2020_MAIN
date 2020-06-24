@@ -499,6 +499,10 @@ class AnimChangeFloor extends MinimapAnimation {
     this._tmpOperV3 = new THREE.Vector3();
     this._tmpMemV3 = new THREE.Vector3();
     
+    /* Steps durations */
+    this._step1 = 0.4;
+    this._step2 = 0.6;
+
     this._startFloor = startFloor;
     this._endFloor = endFloor;
 
@@ -547,18 +551,18 @@ class AnimChangeFloor extends MinimapAnimation {
    
     switch (this._step) {
       case 0:
-        if (this._progress > 0.3) {
+        if (this._progress > this._step1) {
           this._step++;
           break;
         };
 
         /* Uniforms */
         this._minimap._plane.material.uniforms.uAnim.value.numStep = this._step;
-        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = _getCoef(true, false, this._progress / 0.3, 2);
+        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = _getCoef(true, false, this._progress / this._step1, 2);
         break;
 
       case 1:
-        if (this._progress > 0.7) {
+        if (this._progress > this._step2) {
           this._step++;
           break;
         };
@@ -571,7 +575,8 @@ class AnimChangeFloor extends MinimapAnimation {
       case 2:
         /* Uniforms */
         this._minimap._plane.material.uniforms.uAnim.value.numStep = this._step;
-        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = 1 - _getCoef(true, false, (this._progress - 0.7) / 0.3, 2);
+        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = 
+            1 - _getCoef(true, false, (this._progress - this._step2) / this._step1, 2);
         break;
     }
   }
