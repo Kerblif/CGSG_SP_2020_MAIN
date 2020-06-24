@@ -52,7 +52,7 @@ class Animate {
     }, false);
     const tmp = () => {
       try {
-        this.school.setFloor(2);
+        this.school.setFloor(1);
       } catch (err) { if (err.name === 'NExist') { setTimeout(tmp, 500); } }
     };
     tmp.bind(this)();

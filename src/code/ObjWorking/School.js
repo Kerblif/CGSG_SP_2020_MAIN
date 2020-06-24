@@ -10,7 +10,7 @@ import osSchool from '../../bin/models/school/MainModel.glb';
 /**
  * Error of not exist (undefined) properties.
  * @constructor
- * @param  {string} message - error message.
+ * @param {string} message - error message.
  */
 function NExist (message) {
   this.name = 'NExist';
@@ -132,14 +132,17 @@ export default class School {
     this._raycaster.setFromCamera(this._mouse, this._camera);
 
     const select = this._raycaster.intersectObjects(this._cur.children);
-    if (select.length > 0 && this._hoverObj !== this._selectObj) {
-      if (select[0].object === this._selectObj) { return; }
-      this._hoverObj.material = this._deselectMtl;
+    if (select[0].object === this._selectObj) { return; }
+    if (select.length > 0) {
+      if (this._selectObj !== this._hoverObj) {
+        this._hoverObj.material = this._deselectMtl;
+      }
       select[0].object.material = this._hoverMtl;
       this._hoverObj = select[0].object;
     } else {
-      if (this._hoverObj === this._selectObj) { return; }
-      this._hoverObj.material = this._deselectMtl;
+      if (this._selectObj !== this._hoverObj) {
+        this._hoverObj.material = this._deselectMtl;
+      }
     }
   }
 
