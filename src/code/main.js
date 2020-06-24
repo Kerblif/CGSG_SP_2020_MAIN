@@ -5,7 +5,6 @@ import Minimap from './Minimap/minimap.js';
 
 import Sidebar from './Sidebar/Sidebar.js';
 
-// import osSchool from '../bin/models/school/MainModel.glb';
 import School from './ObjWorking/School.js';
 import CloseImg from '../bin/textures/Close.png';
 import { PhisicsWork } from './Rooms/Physics/PhysicsWidget.mjs';
@@ -18,6 +17,13 @@ class Animate {
 
     this._canvas = canvas;
     this._scene = new THREE.Scene();
+    // const cubeTexLoader = new THREE.CubeTextureLoader();
+    // this._scene.background = cubeTexLoader.load([
+    //   psCubePX, psCubeNX,
+    //   psCubePY, psCubeNY,
+    //   psCubePZ, psCubeNZ
+    // ]);
+
     this.init = this.init.bind(this);
     this.render = this.render.bind(this);
     this.ghhhj = new PhisicsWork('phys', 400);
@@ -32,14 +38,14 @@ class Animate {
     this.school._debugKeysSwitcher = true;
 
     this._minimap = new Minimap(this._canvas, this._renderer, true,
-                                0.01, 0.01, 0.25, 0.25);
-    this._minimap.init(100, 100, "./src/bin/minimap/",
-                        [
-                          "floor_01.jpg",
-                          "floor_02.jpg",
-                          "floor_03.jpg",
-                          "floor_04.jpg",
-                        ]);
+      0.01, 0.01, 0.25, 0.25);
+    this._minimap.init(100, 100, './src/bin/minimap/',
+      [
+        'floor_01.jpg',
+        'floor_02.jpg',
+        'floor_03.jpg',
+        'floor_04.jpg'
+      ]);
     this.school.EventChangeFloor = this._minimap.setFloor.bind(this._minimap);
 
     this._resizeCanvas();
