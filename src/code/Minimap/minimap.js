@@ -1,6 +1,12 @@
 import * as THREE from 'three';
-import { MouseWork } from './../IOWorking/IOWork';
+import { MouseWork, KeyboardWork } from './../IOWorking/IOWork';
+import { Vector3 } from 'three';
 
+import {OrbitControls} from '../../../node_modules/three/examples/jsm/controls/OrbitControls.js';
+
+import vertShaderStrPlane from './plane_vert.glsl';
+import fragShaderStrPlane from './plane_frag.glsl';
+import txtSchoolMarking from '../../bin/minimap/school_marking.txt';
 
 /* Minimap clas */
 export default class Minimap {
@@ -8,6 +14,10 @@ export default class Minimap {
                windowOffsetXRatio, windowOffsetYRatio,
                windowWidthRatio, windowHeightRatio) {
 
+    /* Tmp objects */
+    this._tmpOperationV3 = new THREE.Vector3();
+    this._tmpMemoryV3 = new THREE.Vector3();
+    this._tmpM4 = new THREE.Matrix4();
     
     /* Render objects */
     this._canvas = canvas;
@@ -40,20 +50,22 @@ export default class Minimap {
 
     /* Controls */
     this._mouseWork = new MouseWork();
-    this._isMouseHandling = true;
-    
+    this._keyboardWork = new KeyboardWork(this._responseKeyboard.bind(this));
+    this._isKeysLock = true;
+    this._isMoveable = true;
+    this._isMouseHandling = false;
+    this._isFirstMouseResponse = false;
+    this._lastMousePoint = new Vector3();
 
-    
-    /*document.onmousedown = (event) => {
-      if (this._isMouseCoordsInWindow(event.x, event.y)) {
-        this._isMouseHandling = true;
-      } 
-    }
-    document.onmouseup = (event) => {
-      this._isMouseHandling = false;
-    }*/
+    //this._orbitControls = new OrbitControls(this._camera, this._renderer.domElement);
 
-    //this.controls = new OrbitControls(this._camera, this._renderer.domElement);
+    /* Editor */
+    this._editorSchoolMarking = {};
+    this._editorCurFloor = -1;
+    this._editorCurRoom = -1;
+
+    /* School marking object */
+    this._schoolMarking = JSON.parse(txtSchoolMarking);
   }
 
   /* Initialization method */
@@ -65,48 +77,110 @@ export default class Minimap {
       this._texFloors.push( (new THREE.TextureLoader().setPath(pathTex).load(nameTexFloors[i])) );
     }
 
-    /* Location params */
+    /* Floor params */
     this._curFloor = 0;
 
     /* Animation params */
-    this._isAnimation = false;
-    this._currentAnimation = undefined;
+    this._animation = undefined;
 
-    /* Create primitive */
-    const geometry = new THREE.PlaneGeometry(mapWidth, mapHeight, 5, 5);
-    const material = new THREE.MeshBasicMaterial({color: 0xA9A9A9, 
-                                                  side: THREE.DoubleSide/*,
-    map: this._texFloors[this._curFloor]*/});
-    this._primitive = new THREE.Mesh(geometry, material);
+    /* Create primitives */
+    let geometry;
+    let material;
 
-    /* Create sphere */
-    const sgeometry = new THREE.SphereGeometry(1, 20, 20);
-    const smaterial = new THREE.MeshBasicMaterial({color: 0x000000});
-    this._sphere = new THREE.Mesh(sgeometry, smaterial);
-    this._scene.add(this._sphere);
-    
-    //this._primitive.add(new THREE.AxesHelper( 5 ));
+    /* Create plane */
+    this._planeWidth = mapWidth;
+    this._planeHeight = mapHeight;
+
+    geometry = new THREE.PlaneGeometry(mapWidth, mapHeight, 1, 1);
+    material = new THREE.ShaderMaterial( {
+      defines: {
+        NUM_OF_FLOORS: Object.keys(this._schoolMarking).length,
+        FLOOR_NUMBER: 0 
+      },
+      //side: THREE.DoubleSide,
+      uniforms: {
+        uTexFloors: {value: this._texFloors},
+        uCurFloor: {value: this._editorCurFloor},
+        uAnim: { 
+          value: {
+            mode: -1,
+            progress: 0,
+            numStep: 0,
+            texture_01: this._texFloors[0],
+            texture_02: this._texFloors[0],
+            color_01: new THREE.Vector3(0, 0, 0),
+            color_02: new THREE.Vector3(0, 0, 0),
+            coefBlend: 0
+          }
+        }
+      },
+      vertexShader: vertShaderStrPlane,
+      fragmentShader: fragShaderStrPlane
+    } );
+
+    this._plane = new THREE.Mesh(geometry, material);
+    this._plane.position.z = 0;
+    this._group.add(this._plane);
+
+    /* Create rooms */
+    material = new THREE.MeshBasicMaterial({color: 0x00FF00});
+
+    this._floors = [];
+    this._numOfFloors = Object.keys(this._schoolMarking).length;
+    for (let i = 0; i < this._numOfFloors; i++ ) {
+      this._floors.push(new THREE.Group());
+      this._floors[i].name = `floor_${i}`;
+      this._floors[i].position.z = 0.5;
+      this._group.add(this._floors[i]);
+
+      for (let j = 0; j < Object.keys(this._schoolMarking[`floor_${i}`]).length; j++) {
+        
+        let shape = new THREE.Shape();
+        const room = this._schoolMarking[`floor_${i}`][`room_${j}`];
+        let startPoint = {};
+        startPoint.x = room[room.length - 1].x * this._planeWidth * 0.5;
+        startPoint.y = room[room.length - 1].y * this._planeHeight * 0.5;
+
+        shape.moveTo(startPoint.x, startPoint.y);
+        for (const coord of room) {
+          shape.lineTo(coord.x * this._planeWidth * 0.5, coord.y *= this._planeHeight * 0.5);
+        }
+
+        geometry = new THREE.ShapeGeometry(shape);
+        let primitive = new THREE.Mesh(geometry, material);
+        primitive.visible = false;
+        primitive.name = `room_${j}`;
+        this._floors[i].add(primitive);
+      }
+    }
+        
+    /* Create surface */
+    geometry = new THREE.PlaneGeometry(1000, 1000, 1, 1);
+    material = new THREE.MeshBasicMaterial();
+    this._surface = new THREE.Mesh(geometry, material);
+    this._surface.visible = false;
+    this._group.add(this._surface);
+
+    /* Create pointer */
+    //geometry = new THREE.SphereGeometry(0.2, 20, 20);
+    geometry = new THREE.TorusGeometry(0.4, 0.06, 20, 20);
+    material = new THREE.MeshBasicMaterial({color: 0xFF0000});
+    this._pointer = new THREE.Mesh(geometry, material);
+    this._pointer.position.z = 0.5;
+    this._scene.add(this._pointer);
     
     /* Create axes */
     this._axesHelper = new THREE.AxesHelper(5);
+    this._group.add(this._axesHelper);
        
     /* Set camera params */
-    this._camera.position.set(0, 100, 100);
+    this._camera.position.set(0, 0, 50);
     this._camera.lookAt(0, 0, 0);
     
-    
     /* Handling group */
-    this._group.add(this._primitive);
-    //this._group.add(this._axesHelper);
-
     this._group.position.set(0, 0, 0);
     this._scene.add(this._group);
 
-    /*this._dragControls = new DragControls( [this._group], this._camera, this._renderer.domElement );
-    this._dragControls.transformGroup = true;*/
-    
-
-    
   }
 
   resize () {
@@ -167,71 +241,79 @@ export default class Minimap {
   response () {
   
 
-    /* Check animation */
-    if (this._isAnimation) {
-      /* Check animation progress */
+    /* Check animation progress */
+    if (this._animation !== undefined && this._animation.isInProgress) {
+      /* Animation response */
+      this._animation.response();
       
 
     } else {
       /* Mouse response */
 
       /* Check mouse status */
-      if ( this._mouseWork.getIsPressed &&
+      if ( !this._isMouseHandling && this._mouseWork.getIsPressed &&
            this._isMouseCoordsInWindow(this._mouseWork.getPressX, this._mouseWork.getPressY) ) {
-        
-        let raycaster = new THREE.Raycaster();
-        let mouse = new THREE.Vector2();
-
-        const coords = this._getMouseNormWindowCoords(this._mouseWork.getMouseX, this._mouseWork.getMouseY );
-        mouse.set(coords.x, coords.y);
-          
-        raycaster.setFromCamera( mouse, this._camera );
-
-        // calculate objects intersecting the picking ray
-        /*var intersects = raycaster.intersectObject( this._ );
-      
-        for ( var i = 0; i < intersects.length; i++ ) {
-      
-          intersects[ i ].object.material.color.set( 0xff0000 );
-      
-        }*/
-        var intersect = raycaster.intersectObject( this._primitive );
-      
-        if (intersect.length > 0) {
-          intersect[ 0 ].object.material.color.set( 0x0000ff );
-          this._sphere.position.copy(intersect[ 0 ].point);
-        } else {
-          this._primitive.material.color.set( 0xA9A9A9 );
-        }
-        /*
-        const pixelRatio = window.devicePixelRatio;    
-        let x = -this._mouseWork.getXChange;
-        let y = this._mouseWork.getYChange;
-
-        let tmp = new THREE.Vector3(x, y, 0);
-        let a = tmp.length();
-
-        if (a == 0) {
-          return;
-        }
-
-        tmp.applyMatrix4((new THREE.Matrix4()).getInverse(this._camera.projectionMatrix));
-        let b = tmp.length();
-
-        //console.log(a, b, b / a);
-        this._group.applyMatrix4( (new THREE.Matrix4()).makeTranslation(x * 0.01, y * 0.1, 0) );
-          */
-        this._clearColor = 0x00FF00;
-      } else {
-        this._clearColor = 0xFF0000;
+        this._isFirstMouseResponse = true;
+        this._isMouseHandling = true;
+      }
+      if (!this._mouseWork.getIsPressed) {
+        this._isMouseHandling = false;
       }
 
+      if (this._isMouseHandling) {
+        /* Get intersections */
+        const raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+        const coords = this._getMouseNormWindowCoords(this._mouseWork.getMouseX, this._mouseWork.getMouseY);
 
+        mouse.set(coords.x, coords.y);
+        raycaster.setFromCamera(mouse, this._camera);
+        
+        const intersects = raycaster.intersectObjects([this._group], true);
+
+        /* Intersections response */
+        for (let i = 0; i < intersects.length; i++) {
+          if (intersects[i].object.id === this._surface.id) {
+            /* Surface */
+            this._tmpMemoryV3.copy(intersects[i].point);
+          } else if (intersects[i].object.parent === this._floors[this._curFloor] &&
+                     this._isFirstMouseResponse) {
+            /* Rooms */
+            intersects[i].object.visible = true;
+          }
+
+        }
+
+        /* Movement */
+        if (!this._isFirstMouseResponse) {
+          this._movement(this._lastMousePoint, this._tmpMemoryV3);
+        }
+
+        /* Update last mouse point */
+        this._lastMousePoint.copy(this._tmpMemoryV3);
+
+        /* Response first mouse response flag */
+        this._isFirstMouseResponse = false;
+
+      }
+
+      this._pointer.position.copy(this._lastMousePoint);
+
+      /* Keyboard upadte */
+      //this._keyboardWork.update();
+
+      /* Shaders uniforms update */
+      this._plane.material.uniforms.uCurFloor.value = this._editorCurFloor;
 
     }
   }
+  
+  /* Room selector method */
+  _roomSelecter (coords) {
 
+  }
 
+  /* Get normalize mouse coords in minimap window */
   _getMouseNormWindowCoords (x, y) {
     const pixelRatio = window.devicePixelRatio;
     const resX = (x * pixelRatio - this._curWindowOffsetX) / this._curWindowWidth * 2 - 1;
@@ -239,6 +321,7 @@ export default class Minimap {
     return {x: resX, y: resY};
   }
 
+  /* Check mouse coords are in minimap window */
   _isMouseCoordsInWindow(x, y) {
     const pixelRatio = window.devicePixelRatio;
     return (x * pixelRatio > this._curWindowOffsetX && 
@@ -249,41 +332,184 @@ export default class Minimap {
 
   /* Set floor method */
   setFloor (floor) {
+    floor--;
+    //!!!!!!!!!!!!!!!!!!!!!!
+    if (floor === undefined || floor === this._curFloor ||
+        floor < 0 || floor >= 4 /*this._numOfFloors*/) { return };
 
     /* Set animation */
-    if (floor != this._curFloor) {
-      /* Changing floor animation */
-      this._isAnimation = true;
-      //this._currentAnimation = ...
-    }
+    this._animation = new AnimChangeFloor(this, 2.5, this._curFloor, floor);
 
     /* Set current floor */
     this._curFloor = floor;
   }
 
   /* Make movement method */
-  _movement () {
+  _movement (startPoint, endPoint) {
+    if (this._isMoveable) {
+    this._group.position.add(this._tmpOperationV3.subVectors(endPoint, startPoint));
+    }
 
   }
 
-  /* Handle mouse click  method */
-  _handleClick() {
+  /* Handle keyboard */
+  _responseKeyboard (key) {
+    /* Unlockable keys */
+    switch (key) {
+      case 'KeyL':
+        this._isKeysLock = false;
+        break;
+      case 'KeyZ':
+        this._isMoveable = true;
+        break;
+      case 'KeyX':
+        this._isMoveable = false;
+        break;
+        
+    }
 
+    if (this._isKeysLock) {
+      return;
+    }
 
+    /* Lockable keys */
+    switch (key) {
+      case 'KeyF':
+        this._isKeysLock = true;
+        this._editorCurFloor += 1;
+        this._editorSchoolMarking[`floor_${this._editorCurFloor}`] = {};
+        console.log(`Added floor #${this._editorCurFloor}`);
+
+        this._curFloor += 1; 
+        break;
+      case 'KeyR':
+        if (this._editorSchoolMarking[`floor_${this._editorCurFloor}`] === undefined) { break };
+        this._isKeysLock = true;
+        this._editorCurRoom += 1;
+        this._editorSchoolMarking[`floor_${this._editorCurFloor}`][`room_${this._editorCurRoom}`] = [];
+        console.log(`Added room #${this._editorCurRoom}`);
+        break;
+      case 'KeyP':
+        if (this._editorSchoolMarking[`floor_${this._editorCurFloor}`] === undefined ||
+            this._editorSchoolMarking[`floor_${this._editorCurFloor}`][`room_${this._editorCurRoom}`] === undefined) {
+          break
+        };
+        this._isKeysLock = true;
+        this._plane.worldToLocal(this._tmpMemoryV3.copy(this._lastMousePoint));
+
+        let coord = {};
+        coord.x = this._tmpMemoryV3.x / this._planeWidth * 2;
+        coord.y = this._tmpMemoryV3.y / this._planeHeight * 2;
+
+        this._editorSchoolMarking[`floor_${this._editorCurFloor}`][`room_${this._editorCurRoom}`].push(coord);
+        console.log(`Added coord ${JSON.stringify(coord)}`);
+        break;
+      case 'KeyC':
+        this._isKeysLock = true;
+        console.log(JSON.stringify(this._editorSchoolMarking));
+        break;
+      case 'KeyV':
+          this._isKeysLock = true;
+          // !!!!!!!!!!!!!!!!!s
+          this.setFloor((this._curFloor + 1) % 4);
+          break;
+    } 
   }
 
 }
 
 
 class MinimapAnimation {
-  constructor () {
+  constructor (minimap, duration) {
+    this._minimap = minimap;
+    this._duration = duration;
 
-
+    this.isInProgress = true;
+    this._startTime = Date.now();
+    this._progress = 0;
+    this._step = 0;
   }
 
   /* Response animation method */
   response () {
-
+    this._progress = ((Date.now() - this._startTime) / 1000.0) / this._duration;
   }
 
+  _end() {
+    this.isInProgress = false;
+  }
+  
+
 }
+
+
+class AnimChangeFloor extends MinimapAnimation {
+  constructor (minimap, duration, startFloor, endFloor) {
+    super(minimap, duration);
+    this._startFloor = startFloor;
+    this._endFloor = endFloor;
+
+    this._startPlaneZ = this._minimap._plane.position.z;
+    this._startRoomsZ = this._minimap._plane.position.z;
+    this._deltaPlaneZ = 40;
+
+    /* Constant uniforms */
+    this._minimap._plane.material.uniforms.uAnim.value.mode = 0;
+    this._minimap._plane.material.uniforms.uAnim.value.texture_01 = this._minimap._texFloors[this._startFloor];
+    this._minimap._plane.material.uniforms.uAnim.value.texture_02 = this._minimap._texFloors[this._endFloor];
+    this._minimap._plane.material.uniforms.uAnim.value.color_01 = (new THREE.Color()).set(0x191970);
+    this._minimap._plane.material.uniforms.uAnim.value.color_02 = (new THREE.Color()).set(0xFFFAFA);
+  }
+
+  response () {
+    super.response();
+
+    if (this._progress >= 1.0) {
+      this._end();
+      return;
+    }
+
+    /* Movement */
+    this._minimap._plane.position.z = this._startPlaneZ -
+        this._deltaPlaneZ * ( 1 - Math.abs(2 * this._progress - 1) ** 3 );
+    
+   
+    switch (this._step) {
+      case 0:
+        if (this._progress > 0.3) {
+          this._step++;
+          break;
+        };
+
+        /* Uniforms */
+        this._minimap._plane.material.uniforms.uAnim.value.numStep = this._step;
+        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = this._progress / 0.3;
+        break;
+
+      case 1:
+        if (this._progress > 0.7) {
+          this._step++;
+          break;
+        };
+
+        /* Uniforms */
+        this._minimap._plane.material.uniforms.uAnim.value.numStep = this._step;
+        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = 1;
+        break;
+
+      case 2:
+        /* Uniforms */
+        this._minimap._plane.material.uniforms.uAnim.value.numStep = this._step;
+        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = (this._progress - 0.7) / 0.3;
+        break;
+    }
+  }
+
+  _end() {
+    super._end();
+    this._minimap._plane.position.z = this._startPlaneZ;
+    this._minimap._plane.material.uniforms.uAnim.value.numStep = -1;
+  }
+}
+
+
