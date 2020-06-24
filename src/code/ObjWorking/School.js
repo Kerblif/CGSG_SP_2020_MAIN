@@ -75,8 +75,15 @@ export default class School {
     this._scene.remove(this._cur);
     model.material = this._selectMtl;
     this._scene.add(this._cur = model);
+    this.EventChangeFloor(num);
     return model;
   }
+
+  /**
+   * Called when floor changed.
+   * @param {number} num - the floor number.
+   */
+  EventChangeFloor (num) {}
 
   /**
    * Set the room.
