@@ -60,7 +60,7 @@ void main() {
           resColor = patternColor;
           break;
         case 2:
-          resColor = mix( texture2D(uAnim.texture_02, vUv), patternColor, 1.0 - uAnim.coefBlend );
+          resColor = mix( texture2D(uAnim.texture_02, vUv), patternColor, uAnim.coefBlend );
           break;
         case -1:
           resColor = texture2D(uAnim.texture_02, vUv);
