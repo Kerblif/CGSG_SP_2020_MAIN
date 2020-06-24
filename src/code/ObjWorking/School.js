@@ -35,7 +35,7 @@ export default class School {
     this._deselectMtl = new THREE.MeshPhongMaterial({ color: 0xBBBBBB });
     this._selectMtl = new THREE.MeshPhongMaterial({ color: 0xFF3333 });
     document.addEventListener('mousemove', this._onMouseMove.bind(this), false);
-    document.addEventListener('click', this._onMouseClick.bind(this), false);
+    document.addEventListener('dblclick', this._onMouseClick.bind(this), false);
     // document.addEventListener('wheel', this._onMouseWheel.bind(this));
 
     let tmp = (obj) => {
