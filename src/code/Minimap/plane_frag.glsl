@@ -40,8 +40,8 @@ void main() {
 
       vec4 patternColor = vec4(vec3(173.0, 255.0, 47.0) * (1.0 / 255.0), 1.0);
 
-      bool rowType = mod(planePosition.y / 5.0, 2.0) > 1.0;
-      bool columnType = mod(planePosition.x / 5.0, 2.0) > 1.0;
+      bool rowType = mod(gl_FragCoord.y / 25.0, 2.0) > 1.0;
+      bool columnType = mod(gl_FragCoord.x / 25.0, 2.0) > 1.0;
 
       if (rowType ^^ columnType) {
         patternColor = vec4(uAnim.color_01, 1.0);

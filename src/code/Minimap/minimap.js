@@ -299,7 +299,7 @@ export default class Minimap {
       this._pointer.position.copy(this._lastMousePoint);
 
       /* Keyboard upadte */
-      this._keyboardWork.update();
+      //this._keyboardWork.update();
 
       /* Shaders uniforms update */
       this._plane.material.uniforms.uCurFloor.value = this._editorCurFloor;
@@ -469,7 +469,7 @@ class AnimChangeFloor extends MinimapAnimation {
 
     /* Movement */
     this._minimap._plane.position.z = this._startPlaneZ -
-        this._deltaPlaneZ * ( 1 - Math.abs(2 * this._progress - 1) );
+        this._deltaPlaneZ * ( 1 - Math.abs(2 * this._progress - 1) ** 3 );
     
    
     switch (this._step) {

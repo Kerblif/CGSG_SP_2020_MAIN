@@ -32,7 +32,7 @@ class Animate {
     this.createCamera();
 
     this._minimap = new Minimap(this._canvas, this._renderer, true,
-                                0.01, 0.01, 0.6, 0.6);
+                                0.01, 0.01, 0.25, 0.25);
     this._minimap.init(100, 100, "./src/bin/minimap/",
                         [
                           "floor_01.jpg",
