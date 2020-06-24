@@ -4,8 +4,8 @@ import osFloor_1 from '../../bin/models/school/1_Floor.glb';
 import osFloor_2 from '../../bin/models/school/2_Floor.glb';
 import osFloor_3 from '../../bin/models/school/3_Floor.glb';
 import osFloor_4 from '../../bin/models/school/4_Floor.glb';
-import osSchool from '../../bin/models/school/MainModel.glb';
-// import osSchool from '../../bin/models/school/pml30light.glb';
+// import osSchool from '../../bin/models/school/MainModel.glb';
+import osSchool from '../../bin/models/school/pml30light.glb';
 
 /**
  * Error of not exist (undefined) properties.
@@ -31,8 +31,16 @@ export default class School {
 
     this._camera = camera;
     this._scene = scene;
-    this._hoverMtl = new THREE.MeshPhongMaterial({ color: 0xEEEEEE });
-    this._deselectMtl = new THREE.MeshPhongMaterial({ color: 0xBBBBBB });
+    this._hoverMtl = new THREE.MeshPhongMaterial({
+      color: 0xEEEEEE,
+      opacity: 0.6,
+      transparent: true
+    });
+    this._deselectMtl = new THREE.MeshPhongMaterial({
+      color: 0xBBBBBB,
+      opacity: 0.1,
+      transparent: true
+    });
     this._selectMtl = new THREE.MeshPhongMaterial({ color: 0xFF3333 });
     document.addEventListener('mousemove', this._onMouseMove.bind(this), false);
     document.addEventListener('dblclick', this._onMouseClick.bind(this), false);
