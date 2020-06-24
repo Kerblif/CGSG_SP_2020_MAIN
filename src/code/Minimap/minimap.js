@@ -332,12 +332,13 @@ export default class Minimap {
 
   /* Set floor method */
   setFloor (floor) {
+    floor--;
     //!!!!!!!!!!!!!!!!!!!!!!
     if (floor === undefined || floor === this._curFloor ||
         floor < 0 || floor >= 4 /*this._numOfFloors*/) { return };
 
     /* Set animation */
-    this._animation = new AnimChangeFloor(this, 5, this._curFloor, floor);
+    this._animation = new AnimChangeFloor(this, 2.5, this._curFloor, floor);
 
     /* Set current floor */
     this._curFloor = floor;

@@ -40,7 +40,7 @@ class Animate {
                           "floor_03.jpg",
                           "floor_04.jpg",
                         ]);
-
+    this.school.EventChangeFloor = this._minimap.setFloor.bind(this._minimap);
 
     this._resizeCanvas();
 
