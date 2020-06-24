@@ -533,7 +533,7 @@ class AnimChangeFloor extends MinimapAnimation {
 
     /* Plane */
     this._minimap._plane.position.z = this._startPlaneZ -
-        this._deltaPlaneZ * _getCoef(false, true, this._progress, 3);
+        this._deltaPlaneZ * _getCoef(false, true, this._progress, 2);
 
     /* Group */
     this._minimap._group.position.copy( this._tmpMemV3.addVectors(this._startGroupPos, this._tmpMemV3.copy(
@@ -554,7 +554,7 @@ class AnimChangeFloor extends MinimapAnimation {
 
         /* Uniforms */
         this._minimap._plane.material.uniforms.uAnim.value.numStep = this._step;
-        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = this._progress / 0.3;
+        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = _getCoef(true, false, this._progress / 0.3, 2);
         break;
 
       case 1:
@@ -571,7 +571,7 @@ class AnimChangeFloor extends MinimapAnimation {
       case 2:
         /* Uniforms */
         this._minimap._plane.material.uniforms.uAnim.value.numStep = this._step;
-        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = (this._progress - 0.7) / 0.3;
+        this._minimap._plane.material.uniforms.uAnim.value.coefBlend = 1 - _getCoef(true, false, (this._progress - 0.7) / 0.3, 2);
         break;
     }
   }
