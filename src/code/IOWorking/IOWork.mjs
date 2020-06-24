@@ -17,11 +17,14 @@ export class KeyboardWork {
 }
 
 export class MouseWork {
-  constructor (elemet = document) {
+  constructor (inputfunc = () => {}, elemet = document) {
     this._transZ = 10.0;
     this._mouseX = 0.0; this._mouseY = 0.0;
     this._mouseXChange = 0.0; this._mouseYChange = 0.0;
     this._isPressed = false;
+    this._clickId = 0;
+    this._previousClickId = 0;
+    this._inputfunc = inputfunc;
 
     elemet.addEventListener('wheel', (event) => {
       if (this._transZ > -event.deltaY * 3 / 10000) {
@@ -31,27 +34,32 @@ export class MouseWork {
 
     document.addEventListener('mousemove', (event) => {
       if (this._startPosX === undefined) {
-        this._startPosX = event.pageX;
+        this._startPosX = event.offsetX;
       }
 
       if (this._startPosY === undefined) {
-        this._startPosY = event.pageY;
+        this._startPosY = event.offsetY;
       }
 
-      this._mouseXChange = this._startPosX - event.pageX;
-      this._startPosX = event.pageX;
+      this._mouseXChange = this._startPosX - event.offsetX;
+      this._startPosX = event.offsetX;
 
-      this._mouseYChange = this._startPosY - event.pageY;
-      this._startPosY = event.pageY;
+      this._mouseYChange = this._startPosY - event.offsetY;
+      this._startPosY = event.offsetY;
 
-      this._mouseX = event.pageX;
-      this._mouseY = event.pageY;
+      this._mouseX = event.offsetX;
+      this._mouseY = event.offsetY;
     });
 
     elemet.addEventListener('mousedown', (event) => {
-      this._pressX = event.pageX;
-      this._pressY = event.pageY;
+      if (this._inputfunc() === true) {
+        this._previousClickId = this._clickId;
+      }
+
+      this._pressX = event.offsetX;
+      this._pressY = event.offsetY;
       this._isPressed = true;
+      this._clickId += 1;
     });
 
     window.addEventListener('mouseup', () => { this._isPressed = false; });
@@ -91,6 +99,14 @@ export class MouseWork {
 
   get getMouseY () {
     return this._mouseY;
+  }
+
+  IsNewClick () {
+    if (this._isPressed && this._clickId !== this._previousClickId) {
+      this._previousClickId = this._clickId;
+      return true;
+    }
+    return false;
   }
 
   update () {

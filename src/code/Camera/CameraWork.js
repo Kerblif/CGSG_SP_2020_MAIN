@@ -17,7 +17,7 @@ export default class Camera {
     this._hasControl = hasControl;
 
     if (this._hasControl) {
-      this._mouseWork = new MouseWork(elemet);
+      this._mouseWork = new MouseWork(() => {}, elemet);
       this._keyboardWork = new KeyboardWork(this._keyboardMove.bind(this));
     }
   }

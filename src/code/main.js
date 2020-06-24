@@ -20,7 +20,7 @@ class Animate {
     this._scene = new THREE.Scene();
     this.init = this.init.bind(this);
     this.render = this.render.bind(this);
-    this.ghhhj = new PhisicsWork('phys', 400);
+    this.ghhhj = new PhisicsWork('phys', 800);
   }
 
   init () {
@@ -32,14 +32,14 @@ class Animate {
     this.school._debugKeysSwitcher = true;
 
     this._minimap = new Minimap(this._canvas, this._renderer, true,
-                                0.01, 0.01, 0.25, 0.25);
-    this._minimap.init(100, 100, "./src/bin/minimap/",
-                        [
-                          "floor_01.jpg",
-                          "floor_02.jpg",
-                          "floor_03.jpg",
-                          "floor_04.jpg",
-                        ]);
+      0.01, 0.01, 0.25, 0.25);
+    this._minimap.init(100, 100, './src/bin/minimap/',
+      [
+        'floor_01.jpg',
+        'floor_02.jpg',
+        'floor_03.jpg',
+        'floor_04.jpg'
+      ]);
     this.school.EventChangeFloor = this._minimap.setFloor.bind(this._minimap);
 
     this._resizeCanvas();

@@ -48,6 +48,8 @@ export default class Sidebar {
     };
 
     this.resize();
+
+    this.Sidebar.style.visibility = 'visible';
   }
 
   setText (text) {
